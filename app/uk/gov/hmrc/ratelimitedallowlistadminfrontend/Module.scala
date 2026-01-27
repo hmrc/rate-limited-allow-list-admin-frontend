@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend
 
+import play.api.inject.{Binding, Module as AppModule}
 import play.api.{Configuration, Environment}
-import play.api.inject.{Binding, Module => AppModule}
 
 import java.time.Clock
 
