@@ -25,21 +25,30 @@ import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.config.Service
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector.UnexpectedResponseException
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models._
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NoStackTrace
 
 @Singleton
-class RateLimitedAllowListConnector @Inject()(
-                                               configuration: Configuration,
-                                               httpClient: HttpClientV2
+class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
+                                              httpClient: HttpClientV2
                                              )(implicit ec: ExecutionContext) {
 
   private val rateLimitedAllowListService: Service = configuration.get[Service]("microservice.services.rate-limited-allow-list")
 
-  def addTokens(service: String, feature: String, tokens: Int)(implicit hc: HeaderCarrier): Future[Done] =
+  def getFeatures(service: String)(using HeaderCarrier): Future[Seq[FeatureSummary]] =
+    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features")
+      .execute[HttpResponse]
+      .flatMap { response =>
+        response.status match {
+          case OK => Future.successful(response.json.as[List[FeatureSummary]])
+          case status => Future.failed(UnexpectedResponseException(status))
+        }
+      }
+  
+  def addTokens(service: String, feature: String, tokens: Int)(using HeaderCarrier): Future[Done] =
     httpClient.post(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/tokens")
       .withBody(Json.toJson(TokenRequest(tokens)))
       .execute[HttpResponse]
@@ -50,7 +59,7 @@ class RateLimitedAllowListConnector @Inject()(
         }
       }
 
-  def setTokens(service: String, feature: String, tokens: Int)(implicit hc: HeaderCarrier): Future[Done] =
+  def setTokens(service: String, feature: String, tokens: Int)(using HeaderCarrier): Future[Done] =
     httpClient.put(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/tokens")
       .withBody(Json.toJson(TokenRequest(tokens)))
       .execute[HttpResponse]
@@ -61,7 +70,7 @@ class RateLimitedAllowListConnector @Inject()(
         }
       }
 
-  def availableTokens(service: String, feature: String)(implicit hc: HeaderCarrier): Future[TokenResponse] =
+  def availableTokens(service: String, feature: String)(using HeaderCarrier): Future[TokenResponse] =
     httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/tokens")
       .execute[HttpResponse]
       .flatMap { response =>
@@ -71,7 +80,7 @@ class RateLimitedAllowListConnector @Inject()(
         }
       }
 
-  def issuedTokens(service: String, feature: String)(implicit hc: HeaderCarrier): Future[IssuedTokensResponse] =
+  def issuedTokens(service: String, feature: String)(using HeaderCarrier): Future[IssuedTokensResponse] =
     httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/issued-tokens")
       .execute[HttpResponse]
       .flatMap { response =>
