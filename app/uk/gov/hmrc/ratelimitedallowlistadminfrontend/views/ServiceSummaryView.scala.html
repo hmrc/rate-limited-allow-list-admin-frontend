@@ -15,13 +15,8 @@
  *@
 
 @import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
-@import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 
-@this(
-    layout: Layout,
-    govukNotificationBanner: GovukNotificationBanner,
-    govukBreadcrumbs: GovukBreadcrumbs
-)
+@this(layout: Layout, govukNotificationBanner: GovukNotificationBanner)
 
 @(service: String, summaries: Seq[FeatureSummary])(implicit request: Request[_], messages: Messages)
 
@@ -58,7 +53,7 @@
 <!--                                <a id="@service-@{summary.feature}-start-onboarding" class="govuk-link" href="@routes.IndexController.startOnboardingUser(service, summary.feature)">@messages("rlal.service_summary.action.start")</a>-->
 <!--                            </li>-->
                             <li>
-                                <a id="@service-@{summary.feature}-increase-new-user-limit" class="govuk-link" href="@routes.IndexController.increaseNewUserLimit(service, summary.feature)">@messages("rlal.service_summary.action.increase")</a>
+                                <a id="@service-@{summary.feature}-increase-new-user-limit" class="govuk-link" href="@routes.IncreaseNewUserLimitController.onPageLoad(service, summary.feature)">@messages("rlal.service_summary.action.increase")</a>
                             </li>
                             <li>
                                 <a id="@service-@{summary.feature}-set-new-user-limit" class="govuk-link" href="@routes.IndexController.setNewUserLimit(service, summary.feature)">@messages("rlal.service_summary.action.set")</a>

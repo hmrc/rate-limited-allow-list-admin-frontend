@@ -17,7 +17,6 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.views
 
 import play.api.Configuration
-import uk.gov.hmrc.govukfrontend.views.html.components.GovukLayout
 
 import javax.inject.{Inject, Singleton}
 

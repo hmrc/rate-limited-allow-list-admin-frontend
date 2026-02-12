@@ -17,25 +17,31 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.data.Form
+import play.api.i18n.{I18nSupport, Messages}
+import play.api.mvc.{Action, AnyContent, AnyContentAsFormUrlEncoded, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.RlalPredicate
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ServiceSummaryView
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IncreaseNewUserLimitView
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
+
 
 @Singleton
-class ServiceSummaryController @Inject()(
+class IncreaseNewUserLimitController @Inject()(
   mcc: MessagesControllerComponents,
   auth: FrontendAuthComponents,
   connector: RateLimitedAllowListConnector,
-  view: ServiceSummaryView
+  formProvider: IntFormProvider,
+  view: IncreaseNewUserLimitView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
- 
+
+  private def form: Form[Int] = formProvider()
+
   private def authorised(service: String) =
     auth.authorizedAction(
       continueUrl = routes.ServiceSummaryController.onPageLoad(service),
@@ -43,11 +49,20 @@ class ServiceSummaryController @Inject()(
       retrieval = Retrieval.username
     )
 
-  def onPageLoad(service: String): Action[AnyContent] =
+  def onPageLoad(service: String, feature: String): Action[AnyContent] =
+    authorised(service):
+      implicit request =>
+        Ok(view(form, service, feature))
+
+  def onSubmit(service: String, feature: String): Action[AnyContent] =
     authorised(service).async:
       implicit request =>
-        connector
-          .getFeatures(service)
-          .map:
-            summaries =>
-              Ok(view(service, summaries))
+        form.bindFromRequest().fold(
+          formWithErrors => {
+            Future.successful(BadRequest(view(formWithErrors, service, feature)))
+          },
+          userIncrement => connector.addTokens(service, feature, userIncrement).map(
+            _ => Redirect(routes.ServiceSummaryController.onPageLoad(service))
+              .flashing("rlal-notification" -> summon[Messages]("rlal.increase.success", feature))
+          )
+        )

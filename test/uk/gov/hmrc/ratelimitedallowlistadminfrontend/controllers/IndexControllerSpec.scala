@@ -21,20 +21,19 @@ import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
+import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import play.api.inject.guice.GuiceApplicationBuilder
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource, ResourceLocation, ResourceType}
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IndexView
+import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

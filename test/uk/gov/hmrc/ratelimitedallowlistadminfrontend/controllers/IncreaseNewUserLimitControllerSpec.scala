@@ -27,7 +27,7 @@ import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.i18n.{Messages, MessagesApi}
+import play.api.i18n.MessagesApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
@@ -36,13 +36,14 @@ import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBeh
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Done
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.reflect.ClassTag
 
-class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
-  
+class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
+
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
   private val resources = List(
@@ -50,11 +51,10 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     Resource.from("rate-limited-allow-list-admin-frontend", "foo")
   )
 
-  val service = "fake-frontend"
-  val feature1 = "feature 1"
-  val feature2 = "feature 2"
-  
-  val summaryList: Seq[FeatureSummary] = List(FeatureSummary(feature1, 10), FeatureSummary(feature2, 20))
+  val validAnswer = 0
+
+  private val service = "fake-frontend"
+  private val feature = "fake-feature"
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
@@ -65,62 +65,78 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
       )
       .build()
 
-  given Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-  
   override def beforeEach(): Unit =
     super.beforeEach()
-    Mockito.reset(stubBehaviour)
+    Mockito.reset(stubBehaviour, mockConnector)
 
-  "GET /" should:
-    "must display the page when the user is authorised and there are features for the service" in:
+  "GET" should :
+    lazy val onPageLoad = routes.IncreaseNewUserLimitController.onPageLoad(service, feature)
+
+    "return OK and the correct view for a GET" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(summaryList))
 
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
-        .withSession("authToken" -> "Token some-token")
-
+      val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
 
-      status(result) mustBe OK
+      status(result) mustEqual OK
 
       val html = Jsoup.parse(contentAsString(result))
+      html.getElementsByTag("form").size() mustEqual 1
 
-      html.getElementsByAttributeValue("data-test-role","service-summary-row").size() mustEqual summaryList.size
-      html.getElementsByAttributeValue("data-test-role", "admin-actions-list").size()  mustEqual summaryList.size
-
-      summaryList.foreach:
-        case FeatureSummary(feature, _) =>
-          // Option(html.getElementById(s"$service-$feature-stop-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.stopOnboardingUsers(service, feature).url
-          // Option(html.getElementById(s"$service-$feature-start-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.startOnboardingUser(service, feature).url
-          Option(html.getElementById(s"$service-$feature-increase-new-user-limit")).value.attributes().get("href") mustEqual routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
-          Option(html.getElementById(s"$service-$feature-set-new-user-limit")).value.attributes().get("href") mustEqual routes.IndexController.setNewUserLimit(service, feature).url
-
-    "must display the page when the user is authorised and there are no features for the service" in :
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List.empty))
-
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
-        .withSession("authToken" -> "Token some-token")
-
-      val result = route(app, request).value
-
-      status(result) mustBe OK
-
-      val html = Jsoup.parse(contentAsString(result))
-
-      html.getElementsByAttributeValue("data-test-role", "service-summary-row").size() mustEqual 0
-      html.getElementsByAttributeValue("data-test-role", "admin-actions-list").size() mustEqual 0
-      Option(html.getElementById("no-features")) must not be(empty)
-    
-
-    "must fail when the user is not authenticated (no auth token)" in:
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
+    "must fail when the user is not authenticated (no auth token)" in :
+      val request = FakeRequest(onPageLoad)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
 
-    "must fail when the user is not authorised" in:
+    "must fail when the user is not authorised" in :
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      val request = FakeRequest(onPageLoad)
+        .withSession("authToken" -> "Token some-token")
+
+      route(app, request).value.failed.futureValue
+
+  "POST" should:
+    lazy val onSubmit = routes.IncreaseNewUserLimitController.onSubmit(service, feature)
+
+    "redirect when the value is valid and submission is successful" in:
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.addTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
+
+      val request = FakeRequest(POST, onSubmit.url)
+        .withSession("authToken" -> "Token some-token")
+        .withFormUrlEncodedBody("value" -> "100")
+
+      val result = route(app, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(service).url
+      
+      val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+      flash(result).get("rlal-notification").value mustEqual messages("rlal.increase.success", feature)
+
+    "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+
+      val request = FakeRequest(onSubmit)
+        .withSession("authToken" -> "Token some-token")
+        .withFormUrlEncodedBody("value" -> "-100")
+
+      val result = route(app, request).value
+
+      status(result) mustEqual BAD_REQUEST
+ 
+      val html = Jsoup.parse(contentAsString(result))
+      html.getElementsByTag("form").size() mustEqual 1
+
+
+    "fail when the user is not authenticated (no auth token)" in :
+      val request = FakeRequest(onSubmit)
+      val result = route(app, request).value
+      status(result) mustBe SEE_OTHER
+
+    "fail when the user is not authorised" in :
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
+      val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
 
       route(app, request).value.failed.futureValue

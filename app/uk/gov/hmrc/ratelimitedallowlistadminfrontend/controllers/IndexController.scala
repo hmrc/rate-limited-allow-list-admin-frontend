@@ -20,8 +20,8 @@ import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource, ResourceType, Retrieval}
+import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IndexView
-import uk.gov.hmrc.play.bootstrap.frontend.controller.{FrontendBaseController, FrontendController}
 
 import javax.inject.{Inject, Singleton}
 
@@ -29,7 +29,7 @@ import javax.inject.{Inject, Singleton}
 class IndexController @Inject()(
   mcc: MessagesControllerComponents,
   auth: FrontendAuthComponents,
-  view: IndexView,
+  view: IndexView
 ) extends FrontendController(mcc), I18nSupport, Logging:
 
   private val authenticated =
@@ -47,7 +47,6 @@ class IndexController @Inject()(
   def stopOnboardingUsers(service: String, feature: String): Action[AnyContent] = Action(Ok)
   
   def startOnboardingUser(service: String, feature: String): Action[AnyContent] = Action(Ok)
-  
-  def increaseNewUserLimit(service: String, feature: String): Action[AnyContent] = Action(Ok)
+    
   
   def setNewUserLimit(service: String, feature: String): Action[AnyContent] = Action(Ok)
