@@ -73,7 +73,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
     
   ".addTokens" - {
 
-    val url = "/rate-limited-allow-list/services/service/features/feature/tokens"
+    val url = "/rate-limited-allow-list/services/service/features/feature/metadata/tokens"
     val hc = HeaderCarrier()
     val request = TokenRequest(123)
 

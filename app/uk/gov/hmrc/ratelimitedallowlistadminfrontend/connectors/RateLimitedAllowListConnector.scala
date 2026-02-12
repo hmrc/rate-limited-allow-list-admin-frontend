@@ -47,9 +47,9 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
           case status => Future.failed(UnexpectedResponseException(status))
         }
       }
-  
+
   def addTokens(service: String, feature: String, tokens: Int)(using HeaderCarrier): Future[Done] =
-    httpClient.post(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/tokens")
+    httpClient.post(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/metadata/tokens")
       .withBody(Json.toJson(TokenRequest(tokens)))
       .execute[HttpResponse]
       .flatMap { response =>
