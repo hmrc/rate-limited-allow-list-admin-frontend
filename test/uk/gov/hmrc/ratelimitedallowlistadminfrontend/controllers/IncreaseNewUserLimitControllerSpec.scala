@@ -56,6 +56,9 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
   private val service = "fake-frontend"
   private val feature = "fake-feature"
 
+  lazy val onPageLoad = routes.IncreaseNewUserLimitController.onPageLoad(service, feature)
+  lazy val onSubmit = routes.IncreaseNewUserLimitController.onSubmit(service, feature)
+
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
     new GuiceApplicationBuilder()
@@ -70,8 +73,6 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
     Mockito.reset(stubBehaviour, mockConnector)
 
   "GET" should :
-    lazy val onPageLoad = routes.IncreaseNewUserLimitController.onPageLoad(service, feature)
-
     "return OK and the correct view for a GET" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
 
@@ -81,7 +82,11 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
       status(result) mustEqual OK
 
       val html = Jsoup.parse(contentAsString(result))
-      html.getElementsByTag("form").size() mustEqual 1
+      val formElems = html.getElementsByTag("form")
+      formElems.size() mustEqual 1
+
+      val form = formElems.get(0)
+      form.attributes().get("action") mustEqual onSubmit.url
 
     "must fail when the user is not authenticated (no auth token)" in :
       val request = FakeRequest(onPageLoad)
@@ -96,8 +101,6 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
       route(app, request).value.failed.futureValue
 
   "POST" should:
-    lazy val onSubmit = routes.IncreaseNewUserLimitController.onSubmit(service, feature)
-
     "redirect when the value is valid and submission is successful" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
       when(mockConnector.addTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
