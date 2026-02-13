@@ -17,9 +17,9 @@ lazy val microservice = Project("rate-limited-allow-list-admin-frontend", file("
       "uk.gov.hmrc.hmrcfrontend.views.html.components._",
       "uk.gov.hmrc.hmrcfrontend.views.html.helpers._",
       "uk.gov.hmrc.hmrcfrontend.views.config._",
-      "controllers.routes._",
       "uk.gov.hmrc.govukfrontend.views.html.components.implicits._",
-      "uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._"
+      "uk.gov.hmrc.hmrcfrontend.views.html.components.implicits._",
+      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes"
     ))
   .settings(
     libraryDependencies ++= AppDependencies.compile ++ AppDependencies.test,

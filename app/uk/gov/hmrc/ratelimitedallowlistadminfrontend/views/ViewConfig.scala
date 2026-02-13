@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.config
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.views
 
-import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 
-@Singleton
-class AppConfig @Inject()(config: Configuration):
+import javax.inject.{Inject, Singleton}
 
+@Singleton
+class ViewConfig @Inject()(config: Configuration):
   val welshLanguageSupportEnabled: Boolean =
     config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)

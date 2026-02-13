@@ -1,4 +1,4 @@
-@*
+/*
  * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,17 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *@
+ */
 
-@this(layout: Layout)
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
-@()(implicit request: RequestHeader, messages: Messages)
+import play.api.libs.json.{Json, OFormat}
 
-@layout(pageTitle = Some("rate-limited-allow-list-admin-frontend")) {
-    <h1 class="govuk-heading-xl">rate-limited-allow-list-admin-frontend</h1>
-    <p class="govuk-body">@{messages("service.text")}</p>
-}
+case class FeatureSummary(service: String,
+                          feature: String,
+                          tokens: Int,
+                          canIssueTokens: Boolean)
 
-@{
-    //$COVERAGE-OFF$
-}
+
+object FeatureSummary:
+  given OFormat[FeatureSummary] = Json.format
+
