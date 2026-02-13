@@ -18,7 +18,8 @@ object AppDependencies {
   )
 
   val test = Seq(
-    "uk.gov.hmrc"             %% "bootstrap-test-play-30"       % bootstrapVersion
+    "uk.gov.hmrc"             %% "bootstrap-test-play-30"       % bootstrapVersion,
+    "org.scalatestplus"       %% "scalacheck-1-17"              % "3.2.17.0"
   ).map(_ % Test)
 
   val it = Seq.empty
