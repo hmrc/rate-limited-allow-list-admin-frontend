@@ -54,7 +54,10 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
   val feature1 = "feature 1"
   val feature2 = "feature 2"
   
-  val summaryList: Seq[FeatureSummary] = List(FeatureSummary(feature1, 10), FeatureSummary(feature2, 20))
+  val summaryList: Seq[FeatureSummary] = List(
+    FeatureSummary(service, feature1, 10, true),
+    FeatureSummary(service, feature2, 20, false)
+  )
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)

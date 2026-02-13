@@ -18,7 +18,11 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class FeatureSummary(feature: String, count: Int)
+case class FeatureSummary(service: String,
+                          feature: String,
+                          tokens: Int,
+                          canIssueTokens: Boolean)
+
 
 object FeatureSummary:
   given OFormat[FeatureSummary] = Json.format

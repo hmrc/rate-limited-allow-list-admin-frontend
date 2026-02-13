@@ -48,7 +48,11 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
     val hc = HeaderCarrier()
 
     "must return the number of tokens when the server responds with OK" in {
-      val validResponse = List(FeatureSummary("feature-1", 10), FeatureSummary("feature-2", 20))
+      val validResponse = List(
+        FeatureSummary("service", "feature-1", 10, true),
+        FeatureSummary("service", "feature-2", 20, false)
+      )
+
       server.stubFor(
         get(urlMatching(url))
           .willReturn(
