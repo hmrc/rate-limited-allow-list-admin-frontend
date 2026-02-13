@@ -17,7 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
 
 
-import play.api.data.{Form, Forms}
+import play.api.data.Form
 import play.api.data.Forms.*
 import play.api.data.validation.Constraint
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
