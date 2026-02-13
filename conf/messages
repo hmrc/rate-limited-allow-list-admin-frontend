@@ -18,12 +18,14 @@ rlal.index.p = Which service you would like to manage the allow lists?
 rlal.service_summary.title = Manage the allow list for {0}
 rlal.service_summary.heading =  Manage the allow list for {0}
 rlal.service_summary.table.caption = Current allow lists for {0}
+rlal.service_summary.table.feature = Allow lists
 rlal.service_summary.table.count = Count
+rlal.service_summary.table.enabled = Enabled
 rlal.service_summary.table.actions = Actions
 rlal.service_summary.action.stop = Stop onboarding new users
 rlal.service_summary.action.start = Start onboarding new users
 rlal.service_summary.action.increase = Increase the number of new user to onboard
-rlal.service_summary.action.set = Change the limit on number of new user to onboard
+rlal.service_summary.action.set = Set the number of new users to onboard
 rlal.service_summary.no_features = There are no features setup for this service. To onboard a new service and feature, check the README of the rate-limited-allow-list service.
 
 

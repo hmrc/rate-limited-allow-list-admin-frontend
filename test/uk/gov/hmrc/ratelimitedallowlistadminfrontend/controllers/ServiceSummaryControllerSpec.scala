@@ -79,7 +79,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
       when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(summaryList))
 
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
+      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
         .withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
@@ -92,17 +92,25 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
       html.getElementsByAttributeValue("data-test-role", "admin-actions-list").size()  mustEqual summaryList.size
 
       summaryList.foreach:
-        case FeatureSummary(feature, _) =>
-          // Option(html.getElementById(s"$service-$feature-stop-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.stopOnboardingUsers(service, feature).url
-          // Option(html.getElementById(s"$service-$feature-start-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.startOnboardingUser(service, feature).url
-          Option(html.getElementById(s"$service-$feature-increase-new-user-limit")).value.attributes().get("href") mustEqual routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
-          Option(html.getElementById(s"$service-$feature-set-new-user-limit")).value.attributes().get("href") mustEqual routes.IndexController.setNewUserLimit(service, feature).url
+        case FeatureSummary(currService, currFeat, currCount, canIssueTokens) =>
+          val currRow = Option(html.getElementById(s"$currService-$currFeat-summary-row")).value
+
+          // Info columns
+          Option(currRow.getElementById(s"$currService-$currFeat-feature")).value.text() mustEqual currFeat
+          Option(currRow.getElementById(s"$currService-$currFeat-count")).value.text() must include(currCount.toString)
+          Option(currRow.getElementById(s"$currService-$currFeat-enabled")).value.text() must include(canIssueTokens.toString)
+
+          // Action column
+          // Option(currRow.getElementById(s"$currService-$feature-stop-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.stopOnboardingUsers(service, feature).url
+          // Option(currRow.getElementById(s"$currService-$feature-start-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.startOnboardingUser(service, feature).url
+          Option(currRow.getElementById(s"$currService-$currFeat-increase-new-user-limit")).value.attributes().get("href") mustEqual routes.IncreaseNewUserLimitController.onPageLoad(service, currFeat).url
+          Option(currRow.getElementById(s"$currService-$currFeat-set-new-user-limit")).value.attributes().get("href") mustEqual routes.IndexController.setNewUserLimit(service, currFeat).url
 
     "must display the page when the user is authorised and there are no features for the service" in :
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
       when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List.empty))
 
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
+      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
         .withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
@@ -117,13 +125,13 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     
 
     "must fail when the user is not authenticated (no auth token)" in:
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
+      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
 
     "must fail when the user is not authorised" in:
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
-      val request = FakeRequest(GET, routes.ServiceSummaryController.onPageLoad(service).url)
+      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
         .withSession("authToken" -> "Token some-token")
 
       route(app, request).value.failed.futureValue

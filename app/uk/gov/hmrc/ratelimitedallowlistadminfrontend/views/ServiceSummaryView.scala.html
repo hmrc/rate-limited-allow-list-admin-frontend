@@ -20,7 +20,7 @@
 
 @(service: String, summaries: Seq[FeatureSummary])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some(messages("rlal.service_summary.title"))) {
+@layout(pageTitle = Some(messages("rlal.service_summary.title", service))) {
 
     <span class="govuk-caption-l">@service</span>
     <h1 class="govuk-heading-l">@messages("rlal.service_summary.heading", service)</h1>
@@ -36,6 +36,7 @@
             <tr class="govuk-table__row">
                 <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.feature")</th>
                 <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.count")</th>
+                <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.enabled")</th>
                 <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.actions")</th>
             </tr>
             </thead>
@@ -43,7 +44,8 @@
             @summaries.map { summary =>
                 <tr id="@service-@{summary.feature}-summary-row" class="govuk-table__row" data-test-role="service-summary-row">
                     <th id="@service-@{summary.feature}-feature" scope="row" class="govuk-table__header">@summary.feature</th>
-                    <td id="@service-@{summary.feature}-count" class="govuk-table__cell">@summary.count</td>
+                    <td id="@service-@{summary.feature}-count" class="govuk-table__cell">@summary.tokens</td>
+                    <td id="@service-@{summary.feature}-enabled" class="govuk-table__cell">@summary.canIssueTokens</td>
                     <td class="govuk-table__cell">
                         <ul id="@service-@{summary.feature}-actions" data-test-role="admin-actions-list" class="govuk-list">
 <!--                            <li>-->
