@@ -18,7 +18,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.util
 
 import uk.gov.hmrc.internalauth.client.{IAAction, Predicate, Resource, ResourceLocation, ResourceType}
 
-object RlalPredicate:
+object PredicateBuilder:
   case class RLALForService private[util] (service: String):
     def asAdmin: Predicate.Permission = forAction("ADMIN")
 

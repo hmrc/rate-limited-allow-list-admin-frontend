@@ -22,7 +22,7 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.RlalPredicate
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.PredicateBuilder
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ServiceSummaryView
 
 import javax.inject.{Inject, Singleton}
@@ -39,7 +39,7 @@ class ServiceSummaryController @Inject()(
   private def authorised(service: String) =
     auth.authorizedAction(
       continueUrl = routes.ServiceSummaryController.onPageLoad(service),
-      predicate = RlalPredicate.forService(service).asAdmin,
+      predicate = PredicateBuilder.forService(service).asAdmin,
       retrieval = Retrieval.username
     )
 
