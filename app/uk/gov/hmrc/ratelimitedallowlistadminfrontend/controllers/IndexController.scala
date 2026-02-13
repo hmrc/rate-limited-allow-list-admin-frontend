@@ -47,6 +47,3 @@ class IndexController @Inject()(
   def stopOnboardingUsers(service: String, feature: String): Action[AnyContent] = Action(Ok)
   
   def startOnboardingUser(service: String, feature: String): Action[AnyContent] = Action(Ok)
-    
-  
-  def setNewUserLimit(service: String, feature: String): Action[AnyContent] = Action(Ok)

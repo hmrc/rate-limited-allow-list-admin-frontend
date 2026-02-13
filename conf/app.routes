@@ -13,4 +13,5 @@ GET   /services/:service/features/:feature/manage/start         uk.gov.hmrc.rate
 GET   /services/:service/features/:feature/manage/increase      uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IncreaseNewUserLimitController.onPageLoad(service: String, feature: String)
 POST  /services/:service/features/:feature/manage/increase      uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IncreaseNewUserLimitController.onSubmit(service: String, feature: String)
 
-GET   /services/:service/features/:feature/manage/set           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.setNewUserLimit(service: String, feature: String)
+GET   /services/:service/features/:feature/manage/set           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetNewUserLimitController.onPageLoad(service: String, feature: String)
+POST  /services/:service/features/:feature/manage/set           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetNewUserLimitController.onSubmit(service: String, feature: String)

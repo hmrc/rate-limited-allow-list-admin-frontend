@@ -104,7 +104,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
           // Option(currRow.getElementById(s"$currService-$feature-stop-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.stopOnboardingUsers(service, feature).url
           // Option(currRow.getElementById(s"$currService-$feature-start-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.startOnboardingUser(service, feature).url
           Option(currRow.getElementById(s"$currService-$currFeat-increase-new-user-limit")).value.attributes().get("href") mustEqual routes.IncreaseNewUserLimitController.onPageLoad(service, currFeat).url
-          Option(currRow.getElementById(s"$currService-$currFeat-set-new-user-limit")).value.attributes().get("href") mustEqual routes.IndexController.setNewUserLimit(service, currFeat).url
+          Option(currRow.getElementById(s"$currService-$currFeat-set-new-user-limit")).value.attributes().get("href") mustEqual routes.SetNewUserLimitController.onPageLoad(service, currFeat).url
 
     "must display the page when the user is authorised and there are no features for the service" in :
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))

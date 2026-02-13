@@ -28,10 +28,14 @@ rlal.service_summary.action.increase = Increase the number of new user to onboar
 rlal.service_summary.action.set = Set the number of new users to onboard
 rlal.service_summary.no_features = There are no features setup for this service. To onboard a new service and feature, check the README of the rate-limited-allow-list service.
 
-
 rlal.increase.title = Increase the number of new user to onboard
 rlal.increase.heading = Increase the number of new user to onboard
 rlal.increase.values.label = Increment value
 rlal.increase.values.hint = Enter a positive whole number to increment the number of new users to be onboarded
-
 rlal.increase.success = Successfully increased the number of new users to onboard to {0}
+
+rlal.set.title = Set the number of new users to onboard
+rlal.set.heading = Set the number of new users to onboard
+rlal.set.values.label = Number of new users
+rlal.set.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
+rlal.set.success = Successfully set the number of new users to onboard to {0}
