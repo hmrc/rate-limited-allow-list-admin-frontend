@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors
 
-import play.api.Configuration
-import play.api.http.Status.OK
+import play.api.{Configuration, Logging}
+import play.api.http.Status.{NOT_FOUND, NO_CONTENT, OK}
 import play.api.libs.json.Json
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
@@ -34,7 +34,7 @@ import scala.util.control.NoStackTrace
 @Singleton
 class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
                                               httpClient: HttpClientV2
-                                             )(implicit ec: ExecutionContext) {
+                                             )(implicit ec: ExecutionContext) extends Logging {
 
   private val rateLimitedAllowListService: Service = configuration.get[Service]("microservice.services.rate-limited-allow-list")
 
@@ -43,8 +43,9 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
       .execute[HttpResponse]
       .flatMap { response =>
         response.status match {
-          case OK => Future.successful(response.json.as[List[FeatureSummary]])
-          case status => Future.failed(UnexpectedResponseException(status))
+          case OK        => Future.successful(response.json.as[List[FeatureSummary]])
+          case NOT_FOUND => Future.successful(List.empty)
+          case status    => Future.failed(UnexpectedResponseException(status))
         }
       }
 
@@ -52,10 +53,10 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
     httpClient.post(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/metadata/tokens")
       .withBody(Json.toJson(TokenRequest(tokens)))
       .execute[HttpResponse]
-      .flatMap { response =>
-        response.status match {
-          case OK     => Future.successful(Done)
-          case status => Future.failed(UnexpectedResponseException(status))
+      .flatMap {
+        _.status match {
+          case OK | NO_CONTENT  => Future.successful(Done)
+          case status           => Future.failed(UnexpectedResponseException(status))
         }
       }
 
@@ -63,10 +64,10 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
     httpClient.put(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/tokens")
       .withBody(Json.toJson(TokenRequest(tokens)))
       .execute[HttpResponse]
-      .flatMap { response =>
-        response.status match {
-          case OK     => Future.successful(Done)
-          case status => Future.failed(UnexpectedResponseException(status))
+      .flatMap {
+        _.status match {
+          case OK | NO_CONTENT    => Future.successful(Done)
+          case status             => Future.failed(UnexpectedResponseException(status))
         }
       }
 
