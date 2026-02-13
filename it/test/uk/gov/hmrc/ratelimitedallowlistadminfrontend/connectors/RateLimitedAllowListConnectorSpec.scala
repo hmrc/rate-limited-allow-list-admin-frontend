@@ -117,14 +117,14 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
 
   ".setTokens" - {
 
-    val url = "/rate-limited-allow-list/services/service/features/feature/tokens"
+    val url = "/rate-limited-allow-list/services/service/features/feature/metadata"
     val hc = HeaderCarrier()
     val request = TokenRequest(123)
 
     "must return the number of tokens when the server responds with OK" in {
 
       server.stubFor(
-        put(urlMatching(url))
+        patch(urlMatching(url))
           .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
           .willReturn(aResponse().withStatus(OK))
       )
@@ -135,7 +135,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
     "must fail when the server responds with anything else" in {
 
       server.stubFor(
-        put(urlMatching(url))
+        patch(urlMatching(url))
           .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
@@ -146,7 +146,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
     "must fail when the server connection fails" in {
 
       server.stubFor(
-        put(urlMatching(url))
+        patch(urlMatching(url))
           .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
           .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
       )

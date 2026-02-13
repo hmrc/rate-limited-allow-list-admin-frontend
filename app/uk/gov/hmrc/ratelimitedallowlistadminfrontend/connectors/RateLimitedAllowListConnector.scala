@@ -61,7 +61,7 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
       }
 
   def setTokens(service: String, feature: String, tokens: Int)(using HeaderCarrier): Future[Done] =
-    httpClient.put(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/tokens")
+    httpClient.patch(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/metadata")
       .withBody(Json.toJson(TokenRequest(tokens)))
       .execute[HttpResponse]
       .flatMap {
