@@ -48,12 +48,6 @@
                     <td id="@service-@{summary.feature}-enabled" class="govuk-table__cell">@summary.canIssueTokens</td>
                     <td class="govuk-table__cell">
                         <ul id="@service-@{summary.feature}-actions" data-test-role="admin-actions-list" class="govuk-list">
-<!--                            <li>-->
-<!--                                <a id="@service-@{summary.feature}-stop-onboarding" class="govuk-link" href="@routes.IndexController.stopOnboardingUsers(service, summary.feature)">@messages("rlal.service_summary.action.stop")</a>-->
-<!--                            </li>-->
-<!--                            <li>-->
-<!--                                <a id="@service-@{summary.feature}-start-onboarding" class="govuk-link" href="@routes.IndexController.startOnboardingUser(service, summary.feature)">@messages("rlal.service_summary.action.start")</a>-->
-<!--                            </li>-->
                             <li>
                                 <a id="@service-@{summary.feature}-increase-new-user-limit" class="govuk-link" href="@routes.IncreaseNewUserLimitController.onPageLoad(service, summary.feature)">@messages("rlal.service_summary.action.increase")</a>
                             </li>
