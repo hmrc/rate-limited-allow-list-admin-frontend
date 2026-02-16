@@ -18,7 +18,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource, ResourceType, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IndexView
@@ -39,9 +39,11 @@ class IndexController @Inject()(
     )
 
   def onPageLoad(): Action[AnyContent] =
-    authenticated { implicit request =>
-      val resources: Seq[Resource] = request.retrieval.toList.sortBy(_.resourceLocation.value)
-      Ok(view(resources))
+    authenticated {
+      request =>
+        given Request[?] = request
+        val resources = request.retrieval.toList.sortBy(_.resourceLocation.value)
+        Ok(view(resources))
     }
 
   def stopOnboardingUsers(service: String, feature: String): Action[AnyContent] = Action(Ok)

@@ -19,7 +19,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
@@ -51,12 +51,14 @@ class IncreaseNewUserLimitController @Inject()(
 
   def onPageLoad(service: String, feature: String): Action[AnyContent] =
     authorised(service):
-      implicit request =>
+      request =>
+        given Request[?] = request
         Ok(view(form, service, feature))
 
   def onSubmit(service: String, feature: String): Action[AnyContent] =
     authorised(service).async:
-      implicit request =>
+      request =>
+        given Request[?] = request
         form.bindFromRequest().fold(
           formWithErrors => {
             Future.successful(BadRequest(view(formWithErrors, service, feature)))

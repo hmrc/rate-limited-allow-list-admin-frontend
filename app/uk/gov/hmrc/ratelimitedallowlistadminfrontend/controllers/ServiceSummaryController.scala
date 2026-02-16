@@ -18,7 +18,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
@@ -45,7 +45,8 @@ class ServiceSummaryController @Inject()(
 
   def onPageLoad(service: String): Action[AnyContent] =
     authorised(service).async:
-      implicit request =>
+      request =>
+        given Request[?] = request
         connector
           .getFeatures(service)
           .map:
