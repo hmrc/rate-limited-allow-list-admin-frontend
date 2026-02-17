@@ -26,7 +26,7 @@ import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{IssuedTokensResponse, IssuedTokensSummary, TokenRequest, TokenResponse}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{IssuedTokensResponse, IssuedTokensSummary, TokenRequest, TokenResponse, FeatureSummary}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.WireMockHelper
 
 import java.time.LocalDate
@@ -42,9 +42,42 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
 
   private lazy val connector = app.injector.instanceOf[RateLimitedAllowListConnector]
 
+  ".getFeatures" - {
+    
+    val url = "/rate-limited-allow-list/services/service/features"
+    val hc = HeaderCarrier()
+
+    "must return the number of tokens when the server responds with OK" in {
+      val validResponse = List(
+        FeatureSummary("service", "feature-1", 10, true),
+        FeatureSummary("service", "feature-2", 20, false)
+      )
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(
+            aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse)))
+          )
+      )
+
+      val result: Seq[FeatureSummary] = connector.getFeatures("service")(using hc).futureValue
+      result mustEqual validResponse
+    }
+
+    "must fail when the server responds with anything else" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
+      )
+
+      connector.getFeatures("service")(using hc).failed.futureValue
+    }
+  }
+    
   ".addTokens" - {
 
-    val url = "/rate-limited-allow-list/services/service/features/feature/tokens"
+    val url = "/rate-limited-allow-list/services/service/features/feature/metadata/tokens"
     val hc = HeaderCarrier()
     val request = TokenRequest(123)
 
@@ -56,7 +89,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withStatus(OK))
       )
 
-      connector.addTokens("service", "feature", 123)(hc).futureValue
+      connector.addTokens("service", "feature", 123)(using hc).futureValue
     }
 
     "must fail when the server responds with anything else" in {
@@ -67,7 +100,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
 
-      connector.addTokens("service", "feature", 123)(hc).failed.futureValue
+      connector.addTokens("service", "feature", 123)(using hc).failed.futureValue
     }
 
     "must fail when the server connection fails" in {
@@ -78,47 +111,47 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
       )
 
-      connector.addTokens("service", "feature", 123)(hc).failed.futureValue
+      connector.addTokens("service", "feature", 123)(using hc).failed.futureValue
     }
   }
 
   ".setTokens" - {
 
-    val url = "/rate-limited-allow-list/services/service/features/feature/tokens"
+    val url = "/rate-limited-allow-list/services/service/features/feature/metadata"
     val hc = HeaderCarrier()
     val request = TokenRequest(123)
 
     "must return the number of tokens when the server responds with OK" in {
 
       server.stubFor(
-        put(urlMatching(url))
+        patch(urlMatching(url))
           .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
           .willReturn(aResponse().withStatus(OK))
       )
 
-      connector.setTokens("service", "feature", 123)(hc).futureValue
+      connector.setTokens("service", "feature", 123)(using hc).futureValue
     }
 
     "must fail when the server responds with anything else" in {
 
       server.stubFor(
-        put(urlMatching(url))
+        patch(urlMatching(url))
           .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
 
-      connector.setTokens("service", "feature", 123)(hc).failed.futureValue
+      connector.setTokens("service", "feature", 123)(using hc).failed.futureValue
     }
 
     "must fail when the server connection fails" in {
 
       server.stubFor(
-        put(urlMatching(url))
+        patch(urlMatching(url))
           .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
           .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
       )
 
-      connector.setTokens("service", "feature", 123)(hc).failed.futureValue
+      connector.setTokens("service", "feature", 123)(using hc).failed.futureValue
     }
   }
 
@@ -135,7 +168,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse))))
       )
 
-      connector.availableTokens("service", "feature")(hc).futureValue mustBe validResponse
+      connector.availableTokens("service", "feature")(using hc).futureValue mustBe validResponse
     }
 
     "must fail when the server responds with anything else" in {
@@ -145,7 +178,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
 
-      connector.availableTokens("service", "feature")(hc).failed.futureValue
+      connector.availableTokens("service", "feature")(using hc).failed.futureValue
     }
 
     "must fail when the server connection fails" in {
@@ -155,7 +188,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
       )
 
-      connector.availableTokens("service", "feature")(hc).failed.futureValue
+      connector.availableTokens("service", "feature")(using hc).failed.futureValue
     }
   }
 
@@ -172,7 +205,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse))))
       )
 
-      connector.issuedTokens("service", "feature")(hc).futureValue mustBe validResponse
+      connector.issuedTokens("service", "feature")(using hc).futureValue mustBe validResponse
     }
 
     "must fail when the server responds with anything else" in {
@@ -182,7 +215,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
 
-      connector.issuedTokens("service", "feature")(hc).failed.futureValue
+      connector.issuedTokens("service", "feature")(using hc).failed.futureValue
     }
 
     "must fail when the server connection fails" in {
@@ -192,7 +225,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
           .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
       )
 
-      connector.issuedTokens("service", "feature")(hc).failed.futureValue
+      connector.issuedTokens("service", "feature")(using hc).failed.futureValue
     }
   }
 }

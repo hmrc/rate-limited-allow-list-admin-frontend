@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
 
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.HelloWorldPage
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+
+import play.api.data.Form
+import play.api.data.Forms.*
+import play.api.data.validation.Constraint
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
 
 import javax.inject.{Inject, Singleton}
 
 @Singleton
-class HelloWorldController @Inject()(
-  mcc: MessagesControllerComponents,
-  helloWorldPage: HelloWorldPage
-) extends FrontendController(mcc):
-
-  val helloWorld: Action[AnyContent] =
-    Action:
-      implicit request =>
-        Ok(helloWorldPage())
+class IntFormProvider  @Inject() () extends Mappings {
+  def apply(): Form[Int] = Form(
+    mapping(
+      "value" -> int().verifying(minimumValue(0, "error.nonNegative"))
+    )(identity)(Some.apply)
+  )
+}
