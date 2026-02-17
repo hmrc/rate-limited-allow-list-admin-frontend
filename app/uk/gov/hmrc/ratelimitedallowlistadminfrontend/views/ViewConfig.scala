@@ -24,3 +24,5 @@ import javax.inject.{Inject, Singleton}
 class ViewConfig @Inject()(config: Configuration):
   val welshLanguageSupportEnabled: Boolean =
     config.getOptional[Boolean]("features.welsh-language-support").getOrElse(false)
+
+  val homepageUrl: String = config.get[String]("views.homepageUrl")
