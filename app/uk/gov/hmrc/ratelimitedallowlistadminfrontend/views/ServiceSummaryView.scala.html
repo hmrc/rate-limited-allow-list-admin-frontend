@@ -16,11 +16,17 @@
 
 @import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
 
-@this(layout: Layout, govukNotificationBanner: GovukNotificationBanner)
+@this(layout: Layout,
+      govukNotificationBanner: GovukNotificationBanner,
+      govukBreadcrumbs: GovukBreadcrumbs)
 
 @(service: String, summaries: Seq[FeatureSummary])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some(messages("rlal.service_summary.title", service))) {
+@breadcrumbs = {
+  @govukBreadcrumbs(crumb.home > crumb.current("breadcrumbs.service", service))
+}
+
+@layout(pageTitle = Some(messages("rlal.service_summary.title", service)), beforeContent = Some(breadcrumbs)) {
 
     <span class="govuk-caption-l">@service</span>
     <h1 class="govuk-heading-l">@messages("rlal.service_summary.heading", service)</h1>

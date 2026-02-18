@@ -19,13 +19,21 @@
     formHelper: FormWithCSRF,
     govukInput: GovukInput,
     govukButton: GovukButton,
-    govukErrorSummary: GovukErrorSummary
+    govukErrorSummary: GovukErrorSummary,
+    govukBreadcrumbs: GovukBreadcrumbs
 )
 
 @(form: Form[_], service: String, feature: String)(implicit request: Request[_], messages: Messages)
 
+@breadcrumbs = {
+  @govukBreadcrumbs(
+    crumb.home >
+      crumb.page("breadcrumbs.service", service)(routes.ServiceSummaryController.onPageLoad(service)) >
+      crumb.current("breadcrumbs.increase")
+  )
+}
 
-@layout(pageTitle = Some(messages("rlal.increase.title"))) {
+@layout(pageTitle = Some(messages("rlal.increase.title")), beforeContent = Some(breadcrumbs)) {
 
     @formHelper(action = routes.IncreaseNewUserLimitController.onSubmit(service, feature), Symbol("autocomplete") -> "off") {
         <fieldset class="govuk-fieldset">
@@ -49,4 +57,4 @@
             @govukButton(Button(content = Text(messages("site.submit"))))
         </fieldset>
     }
-}
+}/.
