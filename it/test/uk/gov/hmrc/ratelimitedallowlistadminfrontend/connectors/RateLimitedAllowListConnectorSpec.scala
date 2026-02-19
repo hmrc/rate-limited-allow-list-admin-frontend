@@ -48,7 +48,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
     val url = "/rate-limited-allow-list/services/service/features"
     val hc = HeaderCarrier()
 
-    "must return the number of tokens when the server responds with OK" in {
+    "must return the metadata for all the service's features when the server responds with OK" in {
       val validResponse = List(
         FeatureSummary("service", "feature-1", 10, true),
         FeatureSummary("service", "feature-2", 20, false)
@@ -73,6 +73,51 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
       )
 
       connector.getFeatures("service")(using hc).failed.futureValue
+    }
+  }
+    
+  ".getFeaturesMetadata" - {
+    
+    val feature = "test-feature-value"
+    val url = "/rate-limited-allow-list/services/service/features/test-feature-value/metadata"
+    val hc = HeaderCarrier()
+
+    "must return the metadata for the service's feature when the server responds with OK" in {
+      val validResponse = FeatureSummary("service", "feature-1", 10, true)
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(
+            aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse)))
+          )
+      )
+
+      val result = connector.getFeatureMetadata("service", feature)(using hc).futureValue
+      result mustEqual Some(validResponse)
+    }
+
+    "must return a Nonetokens when the server responds with 404" in {
+      val validResponse = FeatureSummary("service", "feature-1", 10, true)
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(
+            aResponse().withStatus(404)
+          )
+      )
+
+      val result = connector.getFeatureMetadata("service", feature)(using hc).futureValue
+      result must be(empty)
+    }
+
+    "must fail when the server responds with anything else" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
+      )
+
+      connector.getFeatureMetadata("service", feature)(using hc).failed.futureValue
     }
   }
     

@@ -49,6 +49,17 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
         }
       }
 
+  def getFeatureMetadata(service: String, feature: String)(using HeaderCarrier): Future[Option[FeatureSummary]] =
+    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/metadata")
+      .execute[HttpResponse]
+      .flatMap { response =>
+        response.status match {
+          case OK        => Future.successful(Some(response.json.as[FeatureSummary]))
+          case NOT_FOUND => Future.successful(Option.empty)
+          case status    => Future.failed(UnexpectedResponseException(status))
+        }
+      }
+
   def addTokens(service: String, feature: String, tokens: Int)(using HeaderCarrier): Future[Done] =
     httpClient.post(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/metadata/tokens")
       .withBody(Json.toJson(TokenRequest(tokens)))
