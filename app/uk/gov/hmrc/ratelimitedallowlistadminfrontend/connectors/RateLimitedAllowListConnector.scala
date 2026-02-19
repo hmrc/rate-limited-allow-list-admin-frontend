@@ -71,6 +71,17 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
         }
       }
 
+  def setCanIssueTokens(service: String, feature: String, canIssueTokens: Boolean)(using HeaderCarrier): Future[Done] =
+    httpClient.patch(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/metadata")
+      .withBody(Json.toJson(IssueTokenStatusUpdateRequest(canIssueTokens)))
+      .execute[HttpResponse]
+      .flatMap {
+        _.status match {
+          case OK | NO_CONTENT    => Future.successful(Done)
+          case status             => Future.failed(UnexpectedResponseException(status))
+        }
+      }
+
   def availableTokens(service: String, feature: String)(using HeaderCarrier): Future[TokenResponse] =
     httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/tokens")
       .execute[HttpResponse]

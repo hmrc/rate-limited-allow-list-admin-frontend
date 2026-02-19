@@ -22,7 +22,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.Application
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK, NO_CONTENT}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
@@ -30,6 +30,7 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{IssuedTokensRespons
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.WireMockHelper
 
 import java.time.LocalDate
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.IssueTokenStatusUpdateRequest
 
 class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with ScalaFutures with IntegrationPatience with WireMockHelper {
 
@@ -126,7 +127,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
       server.stubFor(
         patch(urlMatching(url))
           .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
-          .willReturn(aResponse().withStatus(OK))
+          .willReturn(aResponse().withStatus(NO_CONTENT))
       )
 
       connector.setTokens("service", "feature", 123)(using hc).futureValue
@@ -152,6 +153,59 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
       )
 
       connector.setTokens("service", "feature", 123)(using hc).failed.futureValue
+    }
+  }
+
+  ".setCanIssueTokens" - {
+
+    val url = "/rate-limited-allow-list/services/service/features/feature/metadata"
+    val hc = HeaderCarrier()
+    val request = IssueTokenStatusUpdateRequest(true)
+
+    "must be succesful when enabling when the server responds with OK" in {
+
+      server.stubFor(
+        patch(urlMatching(url))
+          .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
+          .willReturn(aResponse().withStatus(NO_CONTENT))
+      )
+
+      connector.setCanIssueTokens("service", "feature", request.canIssueTokens)(using hc).futureValue
+    }
+
+    "must be succesful when disabling when the server responds with OK" in {
+      val request = IssueTokenStatusUpdateRequest(false)
+
+      server.stubFor(
+        patch(urlMatching(url))
+          .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
+          .willReturn(aResponse().withStatus(NO_CONTENT))
+      )
+
+      connector.setCanIssueTokens("service", "feature", request.canIssueTokens)(using hc).futureValue
+    }
+
+
+    "must fail when the server responds with anything else" in {
+
+      server.stubFor(
+        patch(urlMatching(url))
+          .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
+      )
+
+      connector.setCanIssueTokens("service", "feature", request.canIssueTokens)(using hc).failed.futureValue
+    }
+
+    "must fail when the server connection fails" in {
+
+      server.stubFor(
+        patch(urlMatching(url))
+          .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
+          .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
+      )
+
+      connector.setCanIssueTokens("service", "feature", request.canIssueTokens)(using hc).failed.futureValue
     }
   }
 
