@@ -23,7 +23,7 @@
 @(service: String, summaries: Seq[FeatureSummary])(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
-  @govukBreadcrumbs(crumb.home > crumb.current("breadcrumbs.service", service))
+  @govukBreadcrumbs(crumb.home > crumb.current("rlal.service_summary.breadcrumb", service))
 }
 
 @layout(pageTitle = Some(messages("rlal.service_summary.title", service)), beforeContent = Some(breadcrumbs)) {
@@ -59,6 +59,11 @@
                             </li>
                             <li>
                                 <a id="@service-@{summary.feature}-set-new-user-limit" class="govuk-link" href="@routes.SetNewUserLimitController.onPageLoad(service, summary.feature)">@messages("rlal.service_summary.action.set")</a>
+                            </li>
+                            <li>
+                              <a id="@service-@{summary.feature}-toggle-onboarding" class="govuk-link" href="@routes.ToggleNewUserOnboardingController.onPageLoad(service, summary.feature)">
+                                @if(summary.canIssueTokens){ @messages("rlal.toggle.title.on") }else{ @messages("rlal.toggle.title.off") }
+                              </a>
                             </li>
                         </ul>
                     </td>

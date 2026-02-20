@@ -8,13 +8,14 @@ error.required = Enter a value
 error.wholeNumber = Enter a whole number
 error.nonNumeric = Enter a number value
 error.nonNegative = Enter a positive whole number
+error.boolean = Enter a boolean value
 
+error.feature_not_found = Feature {1} not found for service {0}
 
 rlal.index.title = Administer rate limited allow lists
 rlal.index.heading = Administer rate limited allow lists
 rlal.index.breadcrumb = Home
 rlal.index.p = Which service you would like to manage the allow lists?
-
 
 rlal.service_summary.title = Manage the allow lists for {0}
 rlal.service_summary.heading = Manage the allow lists for {0}
@@ -24,8 +25,6 @@ rlal.service_summary.table.feature = Allow lists
 rlal.service_summary.table.count = Count
 rlal.service_summary.table.enabled = Enabled
 rlal.service_summary.table.actions = Actions
-rlal.service_summary.action.stop = Stop onboarding new users
-rlal.service_summary.action.start = Start onboarding new users
 rlal.service_summary.action.increase = Increase the number of new user to onboard
 rlal.service_summary.action.set = Set the number of new users to onboard
 rlal.service_summary.no_features = There are no features setup for this service. To onboard a new service and feature, check the README of the rate-limited-allow-list service.
@@ -43,3 +42,17 @@ rlal.set.breadcrumb = Set users
 rlal.set.values.label = Number of new users
 rlal.set.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
 rlal.set.success = Successfully set the number of new users to onboard to {0}
+
+rlal.toggle.title.on = Pause onboarding new users
+rlal.toggle.title.off = Resume onboarding of new users
+rlal.toggle.heading.on = Pause onboarding new users
+rlal.toggle.heading.off = Resume onboarding new users
+rlal.toggle.breadcrumb = Toggle onboarding status
+rlal.toggle.inset.on = Onboarding for {0} is ongoing.
+rlal.toggle.inset.off = Onboarding for {0} is paused.
+rlal.toggle.values.hint.on = You can pause the onboarding below.
+rlal.toggle.values.hint.off = You can resume the onboarding below.
+rlal.toggle.button.on = Pause
+rlal.toggle.button.off = Resume
+rlal.toggle.success.paused = Successfully paused onboarding new users to {0} 
+rlal.toggle.success.resumed = Successfully resumed onboarding new users to {0}
