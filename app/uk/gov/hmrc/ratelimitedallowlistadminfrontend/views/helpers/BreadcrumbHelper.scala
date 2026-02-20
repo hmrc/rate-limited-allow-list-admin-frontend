@@ -34,7 +34,7 @@ given Conversion[BreadcrumbsItem, Breadcrumbs] with
 
 object crumb:
   def home(using Messages): BreadcrumbsItem = 
-    page("breadcrumbs.home")(controllers.routes.IndexController.onPageLoad())
+    page("rlal.index.breadcrumb")(controllers.routes.IndexController.onPageLoad())
 
   def current(messageKey: String, params: String*)(using messages: Messages): BreadcrumbsItem =
     BreadcrumbsItem(

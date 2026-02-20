@@ -28,8 +28,8 @@
 @breadcrumbs = {
   @govukBreadcrumbs(
     crumb.home >
-      crumb.page("breadcrumbs.service", service)(routes.ServiceSummaryController.onPageLoad(service)) >
-      crumb.current("breadcrumbs.increase")
+      crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
+      crumb.current("rlal.increase.breadcrumb")
   )
 }
 

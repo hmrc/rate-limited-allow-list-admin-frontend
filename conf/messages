@@ -9,19 +9,16 @@ error.wholeNumber = Enter a whole number
 error.nonNumeric = Enter a number value
 error.nonNegative = Enter a positive whole number
 
-breadcrumbs.home = Home
-breadcrumbs.service = {0}
-breadcrumbs.increase = Increase users
-breadcrumbs.set = Set users
-
 
 rlal.index.title = Administer rate limited allow lists
 rlal.index.heading = Administer rate limited allow lists
+rlal.index.breadcrumb = Home
 rlal.index.p = Which service you would like to manage the allow lists?
 
 
 rlal.service_summary.title = Manage the allow lists for {0}
-rlal.service_summary.heading =  Manage the allow lists for {0}
+rlal.service_summary.heading = Manage the allow lists for {0}
+rlal.service_summary.breadcrumb = {0}
 rlal.service_summary.table.caption = Current allow lists for {0}
 rlal.service_summary.table.feature = Allow lists
 rlal.service_summary.table.count = Count
@@ -35,12 +32,14 @@ rlal.service_summary.no_features = There are no features setup for this service.
 
 rlal.increase.title = Increase the number of new user to onboard
 rlal.increase.heading = Increase the number of new user to onboard
+rlal.increase.breadcrumb = Increase users
 rlal.increase.values.label = Increment value
 rlal.increase.values.hint = Enter a positive whole number to increment the number of new users to be onboarded
 rlal.increase.success = Successfully increased the number of new users to onboard to {0}
 
 rlal.set.title = Set the number of new users to onboard
 rlal.set.heading = Set the number of new users to onboard
+rlal.set.breadcrumb = Set users
 rlal.set.values.label = Number of new users
 rlal.set.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
 rlal.set.success = Successfully set the number of new users to onboard to {0}
