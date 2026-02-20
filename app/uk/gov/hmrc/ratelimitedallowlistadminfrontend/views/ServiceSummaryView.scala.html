@@ -16,11 +16,17 @@
 
 @import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
 
-@this(layout: Layout, govukNotificationBanner: GovukNotificationBanner)
+@this(layout: Layout,
+      govukNotificationBanner: GovukNotificationBanner,
+      govukBreadcrumbs: GovukBreadcrumbs)
 
 @(service: String, summaries: Seq[FeatureSummary])(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = Some(messages("rlal.service_summary.title", service))) {
+@breadcrumbs = {
+  @govukBreadcrumbs(crumb.home > crumb.current("rlal.service_summary.breadcrumb", service))
+}
+
+@layout(pageTitle = Some(messages("rlal.service_summary.title", service)), beforeContent = Some(breadcrumbs)) {
 
     <span class="govuk-caption-l">@service</span>
     <h1 class="govuk-heading-l">@messages("rlal.service_summary.heading", service)</h1>
@@ -53,6 +59,11 @@
                             </li>
                             <li>
                                 <a id="@service-@{summary.feature}-set-new-user-limit" class="govuk-link" href="@routes.SetNewUserLimitController.onPageLoad(service, summary.feature)">@messages("rlal.service_summary.action.set")</a>
+                            </li>
+                            <li>
+                              <a id="@service-@{summary.feature}-toggle-onboarding" class="govuk-link" href="@routes.ToggleNewUserOnboardingController.onPageLoad(service, summary.feature)">
+                                @if(summary.canIssueTokens){ @messages("rlal.toggle.title.on") }else{ @messages("rlal.toggle.title.off") }
+                              </a>
                             </li>
                         </ul>
                     </td>

@@ -28,6 +28,10 @@
 @govukLayout(
     pageTitle = pageTitle,
     headBlock = Some(hmrcInternalHead()),
-    headerBlock = Some(hmrcInternalHeader(InternalHeader(serviceName = Some(messages("service.name"))))),
+    headerBlock = Some(hmrcInternalHeader(InternalHeader(
+      homepageUrl = appConfig.homepageUrl,
+      serviceName = Some(messages("service.name")),
+      serviceUrl = appConfig.homepageUrl
+    ))),
     beforeContentBlock = beforeContent
 )(contentBlock)
