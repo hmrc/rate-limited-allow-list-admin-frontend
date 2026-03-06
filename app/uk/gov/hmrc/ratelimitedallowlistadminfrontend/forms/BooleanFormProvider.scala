@@ -23,11 +23,12 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
 
 import javax.inject.{Inject, Singleton}
 
-@Singleton
-class IntFormProvider  @Inject() () extends Mappings {
-  def apply(): Form[Int] = Form(
+@Singleton()
+class BooleanFormProvider @Inject()() extends Mappings {
+
+  def apply(): Form[Boolean] = Form(
     mapping(
-      "value" -> int().verifying(minimumValue(0, "error.nonNegative"))
+      "value" -> boolean(),
     )(identity)(Some.apply)
   )
 }

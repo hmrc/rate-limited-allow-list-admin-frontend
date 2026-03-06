@@ -7,8 +7,8 @@ GET   /                                                         uk.gov.hmrc.rate
 
 GET   /services/:service                                        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ServiceSummaryController.onPageLoad(service)
 
-GET   /services/:service/features/:feature/manage/stop          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.stopOnboardingUsers(service: String, feature: String)
-GET   /services/:service/features/:feature/manage/start         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.startOnboardingUser(service: String, feature: String)
+GET   /services/:service/features/:feature/manage/toggle          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onPageLoad(service: String, feature: String)
+POST  /services/:service/features/:feature/manage/toggle          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onSubmit(service: String, feature: String)
 
 GET   /services/:service/features/:feature/manage/increase      uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IncreaseNewUserLimitController.onPageLoad(service: String, feature: String)
 POST  /services/:service/features/:feature/manage/increase      uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IncreaseNewUserLimitController.onSubmit(service: String, feature: String)

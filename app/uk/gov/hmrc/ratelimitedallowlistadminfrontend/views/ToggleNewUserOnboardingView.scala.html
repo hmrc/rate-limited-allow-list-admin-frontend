@@ -23,38 +23,47 @@
     govukBreadcrumbs: GovukBreadcrumbs
 )
 
-@(form: Form[_], service: String, feature: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], summary: FeatureSummary)(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(
     crumb.home >
-      crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
-      crumb.current("rlal.increase.breadcrumb")
+      crumb.page("rlal.service_summary.breadcrumb", summary.service)(routes.ServiceSummaryController.onPageLoad(summary.service)) >
+      crumb.current("rlal.toggle.breadcrumb")
   )
 }
 
-@layout(pageTitle = Some(messages("rlal.set.title")), beforeContent = Some(breadcrumbs)) {
+@onOrOff = @{
+    if(summary.canIssueTokens){ ".on" }else{ ".off" }
+}
 
-    @formHelper(action = routes.SetNewUserLimitController.onSubmit(service, feature), Symbol("autocomplete") -> "off") {
+
+@layout(pageTitle = Some(messages("rlal.toggle.title" + onOrOff)), beforeContent = Some(breadcrumbs)) {
+
+    @formHelper(action = routes.ToggleNewUserOnboardingController.onSubmit(summary.service, summary.feature), Symbol("autocomplete") -> "off") {
         <fieldset class="govuk-fieldset">
 
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                <span class="govuk-caption-l">@service</span>
-                <h1 class="govuk-heading-l">@messages("rlal.set.heading")</h1>
+                <span class="govuk-caption-l">@summary.service</span>
+                <h1 class="govuk-heading-l">@messages("rlal.toggle.heading" + onOrOff)</h1>
             </legend>
 
             @if(form.errors.nonEmpty) {
                 @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
             }
 
+            <div class="govuk-inset-text">
+                <p>@messages("rlal.toggle.inset" + onOrOff, summary.feature)</p>
+            </div>
+
             @govukInput(
                 Input(
-                    label = Label(content = Text(messages("rlal.set.values.label"))),
-                    hint = Some(Hint(content = Text(messages("rlal.set.values.hint"))))
+                    inputType = "hidden",
+                    hint = Some(Hint(content = Text(messages("rlal.toggle.values.hint" + onOrOff)))),
                 ).withFormField(form("value"))
             )
 
-            @govukButton(Button(content = Text(messages("site.submit"))))
+            @govukButton(Button(content = Text(messages("rlal.toggle.button" + onOrOff))))
         </fieldset>
     }
 }
