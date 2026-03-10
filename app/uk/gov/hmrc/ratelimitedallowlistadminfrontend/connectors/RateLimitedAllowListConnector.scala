@@ -18,10 +18,11 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors
 
 import play.api.{Configuration, Logging}
 import play.api.http.Status.{NOT_FOUND, NO_CONTENT, OK}
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.HttpReads
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.config.Service
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector.UnexpectedResponseException
@@ -55,6 +56,17 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
       .flatMap { response =>
         response.status match {
           case OK        => Future.successful(Some(response.json.as[FeatureSummary]))
+          case NOT_FOUND => Future.successful(Option.empty)
+          case status    => Future.failed(UnexpectedResponseException(status))
+        }
+      }
+
+  def getFeatureReport(service: String, feature: String)(using HeaderCarrier): Future[Option[FeatureReport]] =
+    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/report?frequency=daily")
+      .execute[HttpResponse]
+      .flatMap { response =>
+        response.status match {
+          case OK        => Future.successful(Some(response.json.as[FeatureReport]))
           case NOT_FOUND => Future.successful(Option.empty)
           case status    => Future.failed(UnexpectedResponseException(status))
         }
@@ -103,15 +115,6 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
         }
       }
 
-  def issuedTokens(service: String, feature: String)(using HeaderCarrier): Future[IssuedTokensResponse] =
-    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/issued-tokens")
-      .execute[HttpResponse]
-      .flatMap { response =>
-        response.status match {
-          case OK     => Future.successful(response.json.as[IssuedTokensResponse])
-          case status => Future.failed(UnexpectedResponseException(status))
-        }
-      }
 }
 
 object RateLimitedAllowListConnector {

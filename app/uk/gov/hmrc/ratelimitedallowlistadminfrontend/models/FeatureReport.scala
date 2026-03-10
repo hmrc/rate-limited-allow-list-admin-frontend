@@ -18,7 +18,18 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class IssuedTokensResponse(summaries: Seq[IssuedTokensSummary])
+import java.time.LocalDate
 
-object IssuedTokensResponse:
-  given OFormat[IssuedTokensResponse] = Json.format
+case class DailyReport(date: LocalDate, count: Int)
+object DailyReport:
+  given OFormat[DailyReport] = Json.format
+
+case class FeatureReport(
+  service: String,
+  feature: String,
+  currentUserCount: Int,
+  report: Seq[DailyReport]
+)
+object FeatureReport:
+  given OFormat[FeatureReport] = Json.format
+
