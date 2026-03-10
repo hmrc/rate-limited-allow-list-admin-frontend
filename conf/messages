@@ -26,19 +26,19 @@ rlal.service_summary.manage_service.h2 = Manage allow lists for {0}
 rlal.service_summary.active.h2 = Allow lists for {0}
 rlal.service_summary.active.single.h3 = Summary of {0}
 rlal.service_summary.active.feature = Summary and actions for {0}
-rlal.service_summary.active.label.newUserCount =  Max new users
+rlal.service_summary.active.label.newUserCount = New user count
 rlal.service_summary.active.label.onboardingStatus = Allow list enabled
 rlal.service_summary.active.value.onboardingStatusPaused = No
 rlal.service_summary.active.value.onboardingStatusRunning = Yes
-rlal.service_summary.action.increase = Increase value
-rlal.service_summary.action.increase.visuallyHidden = Increase the number of new user to onboard
+rlal.service_summary.action.increase = Increase number of new users
+rlal.service_summary.action.increase.visuallyHidden = Increase the number of new users to onboard for {0}
 rlal.service_summary.action.set_new = Set number of new users
 rlal.service_summary.action.set_new.visuallyHidden = Set the number of new users for {0}
 
 rlal.service_summary.no_features = There are no features setup for this service.
 
-rlal.increase.title = Increase the number of new user to onboard
-rlal.increase.heading = Increase the number of new user to onboard
+rlal.increase.title = Increase the number of new users to onboard
+rlal.increase.heading = Increase the number of new users to onboard
 rlal.increase.breadcrumb = Increase users
 rlal.increase.values.label = Increment value
 rlal.increase.values.hint = Enter a positive whole number to increment the number of new users to be onboarded

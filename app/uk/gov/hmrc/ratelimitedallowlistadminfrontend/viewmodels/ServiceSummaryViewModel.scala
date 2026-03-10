@@ -43,11 +43,11 @@ object ServiceSummaryViewModel:
                 ActionItemViewModel(
                   "rlal.service_summary.action.increase",
                   routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
-                ).withVisuallyHiddenText(messages("rlal.service_summary.action.increase.visuallyHidden")),
+                ).withVisuallyHiddenText(messages("rlal.service_summary.action.increase.visuallyHidden", feature)),
                 ActionItemViewModel(
                   "rlal.service_summary.action.set_new",
                   routes.SetNewUserLimitController.onPageLoad(service, feature).url
-                ).withVisuallyHiddenText(messages("rlal.service_summary.action.set.visuallyHidden"))
+                ).withVisuallyHiddenText(messages("rlal.service_summary.action.set.visuallyHidden", feature))
               )
             ),
             SummaryListRowViewModel(

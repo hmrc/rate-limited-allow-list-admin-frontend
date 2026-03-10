@@ -105,8 +105,8 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
           val tokenActions = tokenRow.getElementsByClass("govuk-summary-list__actions-list-item")
           tokenActions.size() mustEqual 2
-          tokenActions.get(0).text() must include("Increase value")
-          tokenActions.get(1).text() must include("Set value")
+          tokenActions.get(0).text() must include("Increase number of new users")
+          tokenActions.get(1).text() must include("Set number of new users")
 
           val statusRow = rows.get(1)
 
