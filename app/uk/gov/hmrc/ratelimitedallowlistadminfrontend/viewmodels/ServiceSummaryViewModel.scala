@@ -45,7 +45,7 @@ object ServiceSummaryViewModel:
                   routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
                 ).withVisuallyHiddenText(messages("rlal.service_summary.action.increase.visuallyHidden")),
                 ActionItemViewModel(
-                  "rlal.service_summary.action.set",
+                  "rlal.service_summary.action.set_new",
                   routes.SetNewUserLimitController.onPageLoad(service, feature).url
                 ).withVisuallyHiddenText(messages("rlal.service_summary.action.set.visuallyHidden"))
               )

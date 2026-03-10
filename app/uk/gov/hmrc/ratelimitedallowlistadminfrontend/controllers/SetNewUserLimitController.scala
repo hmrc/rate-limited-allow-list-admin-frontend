@@ -65,6 +65,6 @@ class SetNewUserLimitController @Inject()(
           },
           newUserLimit => connector.setTokens(service, feature, newUserLimit).map(
             _ => Redirect(routes.ServiceSummaryController.onPageLoad(service))
-              .flashing("rlal-notification" -> summon[Messages]("rlal.set.success", feature))
+              .flashing("rlal-notification" -> summon[Messages]("rlal.set_new.success", feature))
           )
         )

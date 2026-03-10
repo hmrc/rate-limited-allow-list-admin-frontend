@@ -32,8 +32,8 @@ rlal.service_summary.active.value.onboardingStatusPaused = No
 rlal.service_summary.active.value.onboardingStatusRunning = Yes
 rlal.service_summary.action.increase = Increase value
 rlal.service_summary.action.increase.visuallyHidden = Increase the number of new user to onboard
-rlal.service_summary.action.set = Set value
-rlal.service_summary.action.set.visuallyHidden = Set the number of new users to onboard
+rlal.service_summary.action.set_new = Set number of new users
+rlal.service_summary.action.set_new.visuallyHidden = Set the number of new users for {0}
 
 rlal.service_summary.no_features = There are no features setup for this service.
 
@@ -44,12 +44,12 @@ rlal.increase.values.label = Increment value
 rlal.increase.values.hint = Enter a positive whole number to increment the number of new users to be onboarded
 rlal.increase.success = Successfully increased the number of new users to onboard to {0}
 
-rlal.set.title = Set the number of new users to onboard
-rlal.set.heading = Set the number of new users to onboard
-rlal.set.breadcrumb = Set users
-rlal.set.values.label = Number of new users
-rlal.set.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
-rlal.set.success = Successfully set the number of new users to onboard to {0}
+rlal.set_new.title = Set the number of new users to onboard
+rlal.set_new.heading = Set the number of new users to onboard
+rlal.set_new.breadcrumb = Set new users
+rlal.set_new.values.label = Total number of new users
+rlal.set_new.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
+rlal.set_new.success = Successfully set the number of new users to onboard to {0}
 
 rlal.toggle.title.on = Pause onboarding new users
 rlal.toggle.title.off = Resume onboarding of new users
