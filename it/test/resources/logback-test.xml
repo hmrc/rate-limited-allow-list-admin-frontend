@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>logs/rate-limited-allow-list-admin-frontend-tests.log</file>
+        <file>logs/rate-limited-allow-list-admin-frontend-it-tests.log</file>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>%date{ISO8601} level=[%level] logger=[%logger] thread=[%thread] message=[%message] %replace(exception=[%xException]){'^exception=\[\]$',''}%n</pattern>
         </encoder>
@@ -27,7 +27,7 @@
     <root level="OFF">
         <appender-ref ref="FILE"/>
 
-        <!-- This appender is not enabled by default. Uncomment to view logs in stdout -->
+        <!-- This appender is not enabled by default. Uncomment too show log messages in stdout -->
         <!-- <appender-ref ref="STDOUT"/> -->
     </root>
 </configuration>
