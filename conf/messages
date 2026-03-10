@@ -20,14 +20,22 @@ rlal.index.p = Which service you would like to manage the allow lists?
 rlal.service_summary.title = Manage the allow lists for {0}
 rlal.service_summary.heading = Manage the allow lists for {0}
 rlal.service_summary.breadcrumb = {0}
-rlal.service_summary.table.caption = Current allow lists for {0}
-rlal.service_summary.table.feature = Allow lists
-rlal.service_summary.table.count = Count
-rlal.service_summary.table.enabled = Enabled
-rlal.service_summary.table.actions = Actions
-rlal.service_summary.action.increase = Increase the number of new user to onboard
-rlal.service_summary.action.set = Set the number of new users to onboard
-rlal.service_summary.no_features = There are no features setup for this service. To onboard a new service and feature, check the README of the rate-limited-allow-list service.
+
+rlal.service_summary.manage_service.h2 = Manage allow lists for {0}
+
+rlal.service_summary.active.h2 = Allow lists for {0}
+rlal.service_summary.active.single.h3 = Summary of {0}
+rlal.service_summary.active.feature = Summary and actions for {0}
+rlal.service_summary.active.label.newUserCount =  Max new users
+rlal.service_summary.active.label.onboardingStatus = Allow list enabled
+rlal.service_summary.active.value.onboardingStatusPaused = No
+rlal.service_summary.active.value.onboardingStatusRunning = Yes
+rlal.service_summary.action.increase = Increase value
+rlal.service_summary.action.increase.visuallyHidden = Increase the number of new user to onboard
+rlal.service_summary.action.set = Set value
+rlal.service_summary.action.set.visuallyHidden = Set the number of new users to onboard
+
+rlal.service_summary.no_features = There are no features setup for this service.
 
 rlal.increase.title = Increase the number of new user to onboard
 rlal.increase.heading = Increase the number of new user to onboard

@@ -17,6 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import org.jsoup.Jsoup
+import org.jsoup.select.Elements
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -40,6 +41,7 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.jdk.CollectionConverters._
 
 class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
   
@@ -54,7 +56,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
   val feature1 = "feature 1"
   val feature2 = "feature 2"
   
-  val summaryList: Seq[FeatureSummary] = List(
+  val summaryListModels: Seq[FeatureSummary] = List(
     FeatureSummary(service, feature1, 10, true),
     FeatureSummary(service, feature2, 20, false)
   )
@@ -77,7 +79,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
   "GET /" should:
     "must display the page when the user is authorised and there are features for the service" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(summaryList))
+      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(summaryListModels))
 
       val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
         .withSession("authToken" -> "Token some-token")
@@ -88,23 +90,33 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
       val html = Jsoup.parse(contentAsString(result))
 
-      html.getElementsByAttributeValue("data-test-role","service-summary-row").size() mustEqual summaryList.size
-      html.getElementsByAttributeValue("data-test-role", "admin-actions-list").size()  mustEqual summaryList.size
+      val summaryListHtml: Elements = html.getElementsByClass("govuk-summary-list")
+      summaryListHtml.size() mustEqual summaryListModels.size
 
-      summaryList.foreach:
-        case FeatureSummary(currService, currFeat, currCount, canIssueTokens) =>
-          val currRow = Option(html.getElementById(s"$currService-$currFeat-summary-row")).value
+      summaryListHtml.asScala.zip(summaryListModels).foreach:
+        case (html, model) =>
 
-          // Info columns
-          Option(currRow.getElementById(s"$currService-$currFeat-feature")).value.text() mustEqual currFeat
-          Option(currRow.getElementById(s"$currService-$currFeat-count")).value.text() must include(currCount.toString)
-          Option(currRow.getElementById(s"$currService-$currFeat-enabled")).value.text() must include(canIssueTokens.toString)
+          val rows = html.getElementsByClass("govuk-summary-list__row")
+          rows.size() mustEqual 2
 
-          // Action column
-          // Option(currRow.getElementById(s"$currService-$feature-stop-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.stopOnboardingUsers(service, feature).url
-          // Option(currRow.getElementById(s"$currService-$feature-start-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.startOnboardingUser(service, feature).url
-          Option(currRow.getElementById(s"$currService-$currFeat-increase-new-user-limit")).value.attributes().get("href") mustEqual routes.IncreaseNewUserLimitController.onPageLoad(service, currFeat).url
-          Option(currRow.getElementById(s"$currService-$currFeat-set-new-user-limit")).value.attributes().get("href") mustEqual routes.SetNewUserLimitController.onPageLoad(service, currFeat).url
+          val tokenRow = rows.get(0)
+          val tokenValue = tokenRow.getElementsByClass("govuk-summary-list__value")
+          tokenValue.text() must include(model.tokens.toString)
+
+          val tokenActions = tokenRow.getElementsByClass("govuk-summary-list__actions-list-item")
+          tokenActions.size() mustEqual 2
+          tokenActions.get(0).text() must include("Increase value")
+          tokenActions.get(1).text() must include("Set value")
+
+          val statusRow = rows.get(1)
+
+          val expectedStatusText = if model.canIssueTokens then "Yes" else "No"
+          statusRow.getElementsByClass("govuk-summary-list__value").text() must include(expectedStatusText)
+
+          val expectedStatusActionText = if model.canIssueTokens then "Pause" else "Resume"
+          val statusActions = statusRow.getElementsByClass("govuk-summary-list__actions").asScala
+          statusActions.size mustEqual 1
+          statusActions.head.getElementsByTag("a").asScala.head.text() must include(expectedStatusActionText)
 
     "must display the page when the user is authorised and there are no features for the service" in :
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))

@@ -18,9 +18,11 @@
 
 @this(layout: Layout,
       govukNotificationBanner: GovukNotificationBanner,
-      govukBreadcrumbs: GovukBreadcrumbs)
+      govukBreadcrumbs: GovukBreadcrumbs,
+      govukSummaryList: CustomGovukSummaryList,
+)
 
-@(service: String, summaries: Seq[FeatureSummary])(implicit request: Request[_], messages: Messages)
+@(service: String, vms: Seq[ServiceSummaryViewModel])(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(crumb.home > crumb.current("rlal.service_summary.breadcrumb", service))
@@ -35,45 +37,29 @@
         @govukNotificationBanner(NotificationBanner(bannerType = Some("success"), title = Text(messages("site.success")), content = Text(message)))
     }
 
-    @if(summaries.nonEmpty) {
-        <table class="govuk-table">
-            <caption class="govuk-table__caption govuk-table__caption--m">@messages("rlal.service_summary.table.caption", service)</caption>
-            <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.feature")</th>
-                <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.count")</th>
-                <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.enabled")</th>
-                <th scope="col" class="govuk-table__header">@messages("rlal.service_summary.table.actions")</th>
-            </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-            @summaries.map { summary =>
-                <tr id="@service-@{summary.feature}-summary-row" class="govuk-table__row" data-test-role="service-summary-row">
-                    <th id="@service-@{summary.feature}-feature" scope="row" class="govuk-table__header">@summary.feature</th>
-                    <td id="@service-@{summary.feature}-count" class="govuk-table__cell">@summary.tokens</td>
-                    <td id="@service-@{summary.feature}-enabled" class="govuk-table__cell">@summary.canIssueTokens</td>
-                    <td class="govuk-table__cell">
-                        <ul id="@service-@{summary.feature}-actions" data-test-role="admin-actions-list" class="govuk-list">
-                            <li>
-                                <a id="@service-@{summary.feature}-increase-new-user-limit" class="govuk-link" href="@routes.IncreaseNewUserLimitController.onPageLoad(service, summary.feature)">@messages("rlal.service_summary.action.increase")</a>
-                            </li>
-                            <li>
-                                <a id="@service-@{summary.feature}-set-new-user-limit" class="govuk-link" href="@routes.SetNewUserLimitController.onPageLoad(service, summary.feature)">@messages("rlal.service_summary.action.set")</a>
-                            </li>
-                            <li>
-                              <a id="@service-@{summary.feature}-toggle-onboarding" class="govuk-link" href="@routes.ToggleNewUserOnboardingController.onPageLoad(service, summary.feature)">
-                                @if(summary.canIssueTokens){ @messages("rlal.toggle.title.on") }else{ @messages("rlal.toggle.title.off") }
-                              </a>
-                            </li>
-                        </ul>
-                    </td>
-                </tr>
+    <section class="govuk-!-padding-top-2" style="display: none;">
+        <h2 class="govuk-heading-m">@messages("rlal.service_summary.manage_service.h2", service)</h2>
+        <ul class="govuk-list">
+            <li>
+                <a class="govuk-link" href="#">Create a new allow list</a>
+            </li>
+        </ul>
+    </section>
+
+    @if(vms.nonEmpty) {
+        <section class="govuk-body govuk-!-padding-top-6">
+            <h2 class="govuk-heading-m">@messages("rlal.service_summary.active.h2", service)</h2>
+            @vms.map { vm =>
+                <h3 class="govuk-heading-s">@messages("rlal.service_summary.active.feature", vm.feature)</h3>
+                @govukSummaryList(vm.summaryList)
             }
-            </tbody>
-        </table>
+        </section>
     }
 
-    @if(summaries.isEmpty) {
-        <p id="no-features">@messages("rlal.service_summary.no_features")</p>
+    @if(vms.isEmpty) {
+        <section class="govuk-body govuk-!-padding-top-6">
+            <h2 class="govuk-heading-m">@messages("rlal.service_summary.active.h2", service)</h2>
+            <p id="no-features">@messages("rlal.service_summary.no_features")</p>
+        </section>
     }
 }
