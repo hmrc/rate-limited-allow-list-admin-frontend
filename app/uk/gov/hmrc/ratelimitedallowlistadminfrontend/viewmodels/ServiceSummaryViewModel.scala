@@ -19,39 +19,55 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{FeatureReport, FeatureSummary}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
 
 case class ServiceSummaryViewModel(feature: String, summaryList: SummaryList)
 
 object ServiceSummaryViewModel:
 
-  def apply(featureSummary: FeatureSummary)(using messages: Messages): ServiceSummaryViewModel =
+  def apply(featureSummary: FeatureSummary, report: FeatureReport)(using messages: Messages): ServiceSummaryViewModel =
     featureSummary match {
       case FeatureSummary(service, feature, tokens, canIssueTokens) =>
         val (statusMsg, statusActionMsg) = if canIssueTokens then
-          ("rlal.service_summary.active.value.onboardingStatusRunning", "rlal.toggle.title.on")
+          (
+            "rlal.service_summary.summary_list.onboardingStatus.value.Running",
+            "rlal.service_summary.summary_list.onboardingStatus.action.Running"
+          )
         else
-          ("rlal.service_summary.active.value.onboardingStatusPaused", "rlal.toggle.title.off")
+          (
+            "rlal.service_summary.summary_list.onboardingStatus.value.Paused",
+            "rlal.service_summary.summary_list.onboardingStatus.action.Paused"
+          )
 
         val vm = SummaryListViewModel(
           List(
             SummaryListRowViewModel(
-              "rlal.service_summary.active.label.newUserCount",
+              "rlal.service_summary.summary_list.currentUserCount.label",
+              ValueViewModel(report.currentUserCount.toString)
+            ),
+            SummaryListRowViewModel(
+              "rlal.service_summary.summary_list.newUserCount.label",
               ValueViewModel(tokens.toString),
               Seq(
                 ActionItemViewModel(
-                  "rlal.service_summary.action.increase",
+                  "rlal.service_summary.summary_list.newUserCount.action",
                   routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
-                ).withVisuallyHiddenText(messages("rlal.service_summary.action.increase.visuallyHidden", feature)),
-                ActionItemViewModel(
-                  "rlal.service_summary.action.set_new",
-                  routes.SetNewUserLimitController.onPageLoad(service, feature).url
-                ).withVisuallyHiddenText(messages("rlal.service_summary.action.set.visuallyHidden", feature))
+                ).withVisuallyHiddenText(messages("rlal.service_summary.summary_list.newUserCount.action.visuallyHidden", feature))
               )
             ),
             SummaryListRowViewModel(
-              "rlal.service_summary.active.label.onboardingStatus",
+              "rlal.service_summary.summary_list.totalUserCount.label",
+              ValueViewModel((report.currentUserCount + tokens).toString),
+              Seq(
+//                ActionItemViewModel(
+//                  "rlal.service_summary.summary_list.totalUserCount.action",
+//                  routes.SetNewUserLimitController.onPageLoad(service, feature).url
+//                ).withVisuallyHiddenText(messages("rlal.service_summary.summary_list.totalUserCount.action.visuallyHidden", feature))
+              )
+            ),
+            SummaryListRowViewModel(
+              "rlal.service_summary.summary_list.onboardingStatus.label",
               ValueViewModel(statusMsg),
               Seq(
                 ActionItemViewModel(

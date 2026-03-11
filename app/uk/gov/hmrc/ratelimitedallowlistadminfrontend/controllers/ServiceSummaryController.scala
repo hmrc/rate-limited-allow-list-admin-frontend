@@ -29,7 +29,7 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.ServiceSummaryVi
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ServiceSummaryView
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ServiceSummaryController @Inject()(
@@ -48,11 +48,16 @@ class ServiceSummaryController @Inject()(
 
   def onPageLoad(service: String): Action[AnyContent] =
     authorised(service).async {
-      request => {
+      request =>
         given Request[?] = request
-        connector.getFeatures(service).map { summaries =>
-          val summaryList = summaries.sortBy(_.feature).map(ServiceSummaryViewModel.apply)
+        for
+          summaries <- connector.getFeatures(service)
+          reports   <- Future.sequence(summaries.map(summary => connector.getFeatureReport(service, summary.feature)))
+        yield
+          val summaryList = 
+            summaries.zip(reports).map:
+              case (summary, report) =>
+                ServiceSummaryViewModel(summary, report.get)
+          
           Ok(view(service, summaryList))
-        }
-      }
     }

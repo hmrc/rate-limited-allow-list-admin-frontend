@@ -63,14 +63,14 @@
   <dl class="@Helper.toClasses("govuk-summary-list", classes)"@Helper.toAttributes(attributes)>
   @for(row <- rows) {
     <div class="@Helper.toClasses("govuk-summary-list__row", "govuk-summary-list__row--no-actions".when(anyRowHasActions && row.actions.isEmpty), row.classes)">
-      <dt class="@Helper.toClasses("govuk-summary-list__key", row.key.classes)" >
+      <dt class="@Helper.toClasses("govuk-summary-list__key", row.key.classes)">
         @row.key.content.asHtml
       </dt>
       <dd class="@Helper.toClasses("govuk-summary-list__value", row.value.classes)">
         @row.value.content.asHtml
       </dd>
       @if(row.actions.exists(_.items.nonEmpty)) {
-            <dd class="@Helper.toClasses("govuk-summary-list__actions", row.actions.map(_.classes).getOrElse(""))" style="width: 50%;">
+            <dd class="@Helper.toClasses("govuk-summary-list__actions", row.actions.map(_.classes).getOrElse(""))">
           @if(row.actions.exists(_.items.length == 1)) {
             @row.actions.map {actions => @actionLink(actions.items.head, card.flatMap(_.title).map(_.content))}
           } else {

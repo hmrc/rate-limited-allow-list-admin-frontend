@@ -26,14 +26,19 @@ rlal.service_summary.manage_service.h2 = Manage allow lists for {0}
 rlal.service_summary.active.h2 = Allow lists for {0}
 rlal.service_summary.active.single.h3 = Summary of {0}
 rlal.service_summary.active.feature = Summary and actions for {0}
-rlal.service_summary.active.label.newUserCount = New user count
-rlal.service_summary.active.label.onboardingStatus = Allow list enabled
-rlal.service_summary.active.value.onboardingStatusPaused = No
-rlal.service_summary.active.value.onboardingStatusRunning = Yes
-rlal.service_summary.action.increase = Increase number of new users
-rlal.service_summary.action.increase.visuallyHidden = Increase the number of new users to onboard for {0}
-rlal.service_summary.action.set_new = Set number of new users
-rlal.service_summary.action.set_new.visuallyHidden = Set the number of new users for {0}
+
+rlal.service_summary.summary_list.currentUserCount.label = Current user count
+rlal.service_summary.summary_list.newUserCount.label = New user count
+rlal.service_summary.summary_list.newUserCount.action = Increase
+rlal.service_summary.summary_list.newUserCount.action.visuallyHidden = Increase the number of new users to onboard for {0}
+rlal.service_summary.summary_list.totalUserCount.label = Total user count
+rlal.service_summary.summary_list.totalUserCount.action = Set user count
+rlal.service_summary.summary_list.totalUserCount.action.visuallyHidden = Set the total number of number of users for this feature onboard
+rlal.service_summary.summary_list.onboardingStatus.label = Allow list enabled
+rlal.service_summary.summary_list.onboardingStatus.value.Paused = No
+rlal.service_summary.summary_list.onboardingStatus.value.Running = Yes
+rlal.service_summary.summary_list.onboardingStatus.action.Paused = Resume
+rlal.service_summary.summary_list.onboardingStatus.action.Running = Pause
 
 rlal.service_summary.no_features = There are no features setup for this service.
 

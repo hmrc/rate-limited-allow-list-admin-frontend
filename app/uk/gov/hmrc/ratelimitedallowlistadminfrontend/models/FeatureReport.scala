@@ -20,14 +20,14 @@ import play.api.libs.json.{Json, OFormat}
 
 import java.time.LocalDate
 
-case class DailyReport(date: LocalDate, count: Int)
+case class DailyReport(date: LocalDate, count: Long)
 object DailyReport:
   given OFormat[DailyReport] = Json.format
 
 case class FeatureReport(
   service: String,
   feature: String,
-  currentUserCount: Int,
+  currentUserCount: Long,
   report: Seq[DailyReport]
 )
 object FeatureReport:
