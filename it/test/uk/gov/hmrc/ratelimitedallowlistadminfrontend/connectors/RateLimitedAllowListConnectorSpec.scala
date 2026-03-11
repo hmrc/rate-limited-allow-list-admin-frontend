@@ -29,7 +29,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.WireMockHelper
 
 import java.time.LocalDate
 
@@ -128,7 +127,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
     val hc = HeaderCarrier()
 
     "must return the metadata for the service's feature when the server responds with OK" in {
-      val validResponse = FeatureReport(
+      val validResponse = AllowListReport(
         "service",
         "feature-1",
         100, 

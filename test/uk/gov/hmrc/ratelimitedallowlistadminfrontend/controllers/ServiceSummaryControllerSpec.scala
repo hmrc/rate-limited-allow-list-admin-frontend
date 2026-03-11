@@ -17,7 +17,6 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import org.jsoup.Jsoup
-import org.jsoup.select.Elements
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
@@ -31,20 +30,20 @@ import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{FeatureReport, FeatureSummary}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.jdk.CollectionConverters.*
 
 class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
-  
+
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
   private val resources = List(
@@ -55,11 +54,11 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
   val service = "fake-frontend"
   val feature1 = "feature 1"
   val feature2 = "feature 2"
-  
-  val summaryListModels: Seq[FeatureSummary] = List(
-    FeatureSummary(service, feature1, 10, true),
-    FeatureSummary(service, feature2, 20, false)
-  )
+  val feature3 = "feature 3"
+
+  val summary1 = FeatureSummary(service, feature1, 10, true)
+  val summary2 = FeatureSummary(service, feature2, 20, false)
+  val summary3 = FeatureSummary(service, feature3, 30, true)
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
@@ -70,22 +69,20 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
       )
       .build()
 
-  given Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-  
+  given messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+
   override def beforeEach(): Unit =
     super.beforeEach()
     Mockito.reset(stubBehaviour)
 
-  "GET /" should:
-    "must display the page when the user is authorised and there are features for the service" in:
-      val currentUserCount = 100
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(summaryListModels))
-      when(mockConnector.getFeatureReport(any(), any())(using any()))
-        .thenReturn(Future.successful(Some(FeatureReport(service, feature1, currentUserCount, List.empty))))
+  private def url: Call = routes.ServiceSummaryController.onPageLoad(service)
 
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
-        .withSession("authToken" -> "Token some-token")
+  "GET /" should {
+    "must display the page when the user is authorised and there are allow lists for the service" in {
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary2, summary1)))
+
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
 
@@ -93,74 +90,106 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
       val html = Jsoup.parse(contentAsString(result))
 
-      val summaryListHtml: Elements = html.getElementsByClass("govuk-summary-list")
-      summaryListHtml.size() mustEqual summaryListModels.size
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
 
-      summaryListHtml.asScala.zip(summaryListModels).foreach:
-        case (html, model) =>
+      val runningAllowListsList = runningSection.getElementsByTag("li")
+      runningAllowListsList.size() mustEqual 2
+      runningAllowListsList.get(0).text() must include(feature1)
+      runningAllowListsList.get(1).text() must include(feature3)
 
-          val rows = html.getElementsByClass("govuk-summary-list__row")
-          rows.size() mustEqual 4
+      val pausedAllowListsList = pausedSection.getElementsByTag("li")
+      pausedAllowListsList.size() mustEqual 1
+      pausedAllowListsList.get(0).text() must include(feature2)
+    }
 
-          val currentUserRow = rows.get(0)
-          val tokenRow = rows.get(1)
-          val totalUsersRow = rows.get(2)
-          val statusRow = rows.get(3)
+    "must display the page when the user is authorised and all allow lists are running" in {
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary1)))
 
-          // Current user count row
-          currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(currentUserCount.toString)
-          currentUserRow.getElementsByClass("govuk-summary-list__actions-list-item").size() mustEqual 0
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
-          // Token row
-          tokenRow.getElementsByClass("govuk-summary-list__value").text() must include(model.tokens.toString)
+      val result = route(app, request).value
 
-          val tokenActions = tokenRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
-          tokenActions.size() mustEqual 1
-          tokenActions.get(0).text() must include("Increase")
+      status(result) mustBe OK
 
-          // Total row
-          totalUsersRow.getElementsByClass("govuk-summary-list__value").text() must include((currentUserCount + model.tokens).toString)
+      val html = Jsoup.parse(contentAsString(result))
 
-//          val totalUsersActions = totalUsersRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
-//          totalUsersActions.size() mustEqual 1
-//          totalUsersActions.get(0).text() must include("Set user count")
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
 
-          // status row
-          val expectedStatusText = if model.canIssueTokens then "Yes" else "No"
-          statusRow.getElementsByClass("govuk-summary-list__value").text() must include(expectedStatusText)
+      val runningAllowListsList = runningSection.getElementsByTag("li")
+      runningAllowListsList.size() mustEqual 2
+      runningAllowListsList.get(0).text() must include(feature1)
+      runningAllowListsList.get(1).text() must include(feature3)
 
-          val expectedStatusActionText = if model.canIssueTokens then "Pause" else "Resume"
-          val statusActions = statusRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
-          statusActions.size() mustEqual 1
-          statusActions.get(0).text() must include(expectedStatusActionText)
+      val pausedAllowListsList = pausedSection.getElementsByTag("li")
+      pausedAllowListsList.size() mustEqual 0
+      Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_paused_empty")
+      )
+    }
 
+    "must display the page when the user is authorised and all allow lists are paused" in {
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary2)))
 
-    "must display the page when the user is authorised and there are no features for the service" in :
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
+
+      val result = route(app, request).value
+
+      status(result) mustBe OK
+
+      val html = Jsoup.parse(contentAsString(result))
+
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+
+      val runningAllowListsList = runningSection.getElementsByTag("li")
+      runningAllowListsList.size() mustEqual 0
+      Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_running_empty")
+      )
+
+      val pausedAllowListsList = pausedSection.getElementsByTag("li")
+      pausedAllowListsList.size() mustEqual 1
+      pausedAllowListsList.get(0).text() must include(feature2)
+    }
+
+    "must display the page when the user is authorised and there are no allow lists for the service" in {
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
       when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List.empty))
 
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
-        .withSession("authToken" -> "Token some-token")
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
 
-      status(result) mustBe OK
+      status(result) mustBe 404
 
       val html = Jsoup.parse(contentAsString(result))
 
-      html.getElementsByAttributeValue("data-test-role", "service-summary-row").size() mustEqual 0
-      html.getElementsByAttributeValue("data-test-role", "admin-actions-list").size() mustEqual 0
-      Option(html.getElementById("no-features")) must not be(empty)
-    
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
 
-    "must fail when the user is not authenticated (no auth token)" in:
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
+      Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_running_empty")
+      )
+      Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_paused_empty")
+      )
+    }
+
+    "must fail when the user is not authenticated (no auth token)" in {
+      val request = FakeRequest(url)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+    }
 
-    "must fail when the user is not authorised" in:
+    "must fail when the user is not authorised" in {
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
+      val request = FakeRequest(url)
         .withSession("authToken" -> "Token some-token")
 
       route(app, request).value.failed.futureValue
+    }
+  }

@@ -61,12 +61,12 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
         }
       }
 
-  def getFeatureReport(service: String, feature: String)(using HeaderCarrier): Future[Option[FeatureReport]] =
+  def getFeatureReport(service: String, feature: String)(using HeaderCarrier): Future[Option[AllowListReport]] =
     httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features/$feature/report?frequency=daily")
       .execute[HttpResponse]
       .flatMap { response =>
         response.status match {
-          case OK        => Future.successful(Some(response.json.as[FeatureReport]))
+          case OK        => Future.successful(Some(response.json.as[AllowListReport]))
           case NOT_FOUND => Future.successful(Option.empty)
           case status    => Future.failed(UnexpectedResponseException(status))
         }

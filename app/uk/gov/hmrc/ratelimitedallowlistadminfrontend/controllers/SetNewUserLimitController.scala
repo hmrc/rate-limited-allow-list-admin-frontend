@@ -64,7 +64,7 @@ class SetNewUserLimitController @Inject()(
             Future.successful(BadRequest(view(formWithErrors, service, feature)))
           },
           newUserLimit => connector.setTokens(service, feature, newUserLimit).map(
-            _ => Redirect(routes.ServiceSummaryController.onPageLoad(service))
+            _ => Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
               .flashing("rlal-notification" -> summon[Messages]("rlal.set_new.success", feature))
           )
         )

@@ -16,13 +16,9 @@
 
 @import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
 
-@this(layout: Layout,
-      govukNotificationBanner: GovukNotificationBanner,
-      govukBreadcrumbs: GovukBreadcrumbs,
-      govukSummaryList: CustomGovukSummaryList,
-)
+@this(layout: Layout, govukBreadcrumbs: GovukBreadcrumbs)
 
-@(service: String, vms: Seq[ServiceSummaryViewModel])(implicit request: Request[_], messages: Messages)
+@(service: String, vm: ServiceSummaryViewModel)(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(crumb.home > crumb.current("rlal.service_summary.breadcrumb", service))
@@ -33,10 +29,6 @@
     <span class="govuk-caption-l">@service</span>
     <h1 class="govuk-heading-l">@messages("rlal.service_summary.heading", service)</h1>
 
-    @request.flash.get("rlal-notification").map { message =>
-        @govukNotificationBanner(NotificationBanner(bannerType = Some("success"), title = Text(messages("site.success")), content = Text(message)))
-    }
-
     <section class="govuk-!-padding-top-2" style="display: none;">
         <h2 class="govuk-heading-m">@messages("rlal.service_summary.manage_service.h2", service)</h2>
         <ul class="govuk-list">
@@ -46,20 +38,35 @@
         </ul>
     </section>
 
-    @if(vms.nonEmpty) {
-        <section class="govuk-body govuk-!-padding-top-6">
-            <h2 class="govuk-heading-m">@messages("rlal.service_summary.active.h2", service)</h2>
-            @vms.map { vm =>
-                <h3 class="govuk-heading-s">@messages("rlal.service_summary.active.feature", vm.feature)</h3>
-                @govukSummaryList(vm.summaryList)
+    <section id="allow-lists-running" class="govuk-!-padding-top-2" >
+        <h2 class="govuk-heading-m">@messages("rlal.service_summary.running.h2", service)</h2>
+        <ul class="govuk-list govuk-list--bullet">
+            @vm.running.map { allowListName =>
+                <li>
+                    <a class="govuk-link"
+                       href="@routes.AllowListSummaryController.onPageLoad(service, allowListName)"
+                    >@allowListName</a>
+                </li>
             }
-        </section>
-    }
+            @if(vm.running.isEmpty){
+                <p id="allow-list-running-empty">@messages("rlal.service_summary.allow_list_running_empty")</p>
+            }
+        </ul>
+    </section>
 
-    @if(vms.isEmpty) {
-        <section class="govuk-body govuk-!-padding-top-6">
-            <h2 class="govuk-heading-m">@messages("rlal.service_summary.active.h2", service)</h2>
-            <p id="no-features">@messages("rlal.service_summary.no_features")</p>
-        </section>
-    }
+    <section id="allow-lists-paused" class="govuk-!-padding-top-2">
+        <h2 class="govuk-heading-m">@messages("rlal.service_summary.paused.h2", service)</h2>
+        <ul class="govuk-list govuk-list--bullet">
+            @vm.paused.map { allowListName =>
+                <li>
+                    <a class="govuk-link"
+                       href="@routes.AllowListSummaryController.onPageLoad(service, allowListName)"
+                    >@allowListName</a>
+                </li>
+            }
+            @if(vm.paused.isEmpty){
+                <p id="allow-list-paused-empty">@messages("rlal.service_summary.allow_list_paused_empty")</p>
+            }
+        </ul>
+    </section>
 }

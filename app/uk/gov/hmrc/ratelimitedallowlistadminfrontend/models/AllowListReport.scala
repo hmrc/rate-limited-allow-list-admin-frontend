@@ -24,12 +24,12 @@ case class DailyReport(date: LocalDate, count: Long)
 object DailyReport:
   given OFormat[DailyReport] = Json.format
 
-case class FeatureReport(
+case class AllowListReport(
   service: String,
   feature: String,
   currentUserCount: Long,
   report: Seq[DailyReport]
 )
-object FeatureReport:
-  given OFormat[FeatureReport] = Json.format
+object AllowListReport:
+  given OFormat[AllowListReport] = Json.format
 
