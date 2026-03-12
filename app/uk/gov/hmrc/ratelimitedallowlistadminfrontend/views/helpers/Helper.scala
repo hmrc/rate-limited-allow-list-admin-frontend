@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.helpers
 
-import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.supportfrontend.views.UtilsSupport
 
-import java.time.LocalDate
+object Helper extends UtilsSupport
 
-final case class IssuedTokensSummary(date: LocalDate, count: Int)
 
-object IssuedTokensSummary:
-  given OFormat[IssuedTokensSummary] = Json.format

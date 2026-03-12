@@ -30,6 +30,7 @@ import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.mvc.Call
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
@@ -42,7 +43,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
-  
+
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
   private val resources = List(
@@ -53,11 +54,11 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
   val service = "fake-frontend"
   val feature1 = "feature 1"
   val feature2 = "feature 2"
-  
-  val summaryList: Seq[FeatureSummary] = List(
-    FeatureSummary(service, feature1, 10, true),
-    FeatureSummary(service, feature2, 20, false)
-  )
+  val feature3 = "feature 3"
+
+  val summary1 = FeatureSummary(service, feature1, 10, true)
+  val summary2 = FeatureSummary(service, feature2, 20, false)
+  val summary3 = FeatureSummary(service, feature3, 30, true)
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
@@ -68,19 +69,20 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
       )
       .build()
 
-  given Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-  
+  given messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+
   override def beforeEach(): Unit =
     super.beforeEach()
     Mockito.reset(stubBehaviour)
 
-  "GET /" should:
-    "must display the page when the user is authorised and there are features for the service" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(summaryList))
+  private def url: Call = routes.ServiceSummaryController.onPageLoad(service)
 
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
-        .withSession("authToken" -> "Token some-token")
+  "GET /" should {
+    "must display the page when the user is authorised and there are allow lists for the service" in {
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary2, summary1)))
+
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
 
@@ -88,50 +90,106 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
       val html = Jsoup.parse(contentAsString(result))
 
-      html.getElementsByAttributeValue("data-test-role","service-summary-row").size() mustEqual summaryList.size
-      html.getElementsByAttributeValue("data-test-role", "admin-actions-list").size()  mustEqual summaryList.size
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
 
-      summaryList.foreach:
-        case FeatureSummary(currService, currFeat, currCount, canIssueTokens) =>
-          val currRow = Option(html.getElementById(s"$currService-$currFeat-summary-row")).value
+      val runningAllowListsList = runningSection.getElementsByTag("li")
+      runningAllowListsList.size() mustEqual 2
+      runningAllowListsList.get(0).text() must include(feature1)
+      runningAllowListsList.get(1).text() must include(feature3)
 
-          // Info columns
-          Option(currRow.getElementById(s"$currService-$currFeat-feature")).value.text() mustEqual currFeat
-          Option(currRow.getElementById(s"$currService-$currFeat-count")).value.text() must include(currCount.toString)
-          Option(currRow.getElementById(s"$currService-$currFeat-enabled")).value.text() must include(canIssueTokens.toString)
+      val pausedAllowListsList = pausedSection.getElementsByTag("li")
+      pausedAllowListsList.size() mustEqual 1
+      pausedAllowListsList.get(0).text() must include(feature2)
+    }
 
-          // Action column
-          // Option(currRow.getElementById(s"$currService-$feature-stop-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.stopOnboardingUsers(service, feature).url
-          // Option(currRow.getElementById(s"$currService-$feature-start-onboarding")).value.attributes().get("href") mustEqual routes.IndexController.startOnboardingUser(service, feature).url
-          Option(currRow.getElementById(s"$currService-$currFeat-increase-new-user-limit")).value.attributes().get("href") mustEqual routes.IncreaseNewUserLimitController.onPageLoad(service, currFeat).url
-          Option(currRow.getElementById(s"$currService-$currFeat-set-new-user-limit")).value.attributes().get("href") mustEqual routes.SetNewUserLimitController.onPageLoad(service, currFeat).url
+    "must display the page when the user is authorised and all allow lists are running" in {
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary1)))
 
-    "must display the page when the user is authorised and there are no features for the service" in :
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
+
+      val result = route(app, request).value
+
+      status(result) mustBe OK
+
+      val html = Jsoup.parse(contentAsString(result))
+
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+
+      val runningAllowListsList = runningSection.getElementsByTag("li")
+      runningAllowListsList.size() mustEqual 2
+      runningAllowListsList.get(0).text() must include(feature1)
+      runningAllowListsList.get(1).text() must include(feature3)
+
+      val pausedAllowListsList = pausedSection.getElementsByTag("li")
+      pausedAllowListsList.size() mustEqual 0
+      Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_paused_empty")
+      )
+    }
+
+    "must display the page when the user is authorised and all allow lists are paused" in {
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary2)))
+
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
+
+      val result = route(app, request).value
+
+      status(result) mustBe OK
+
+      val html = Jsoup.parse(contentAsString(result))
+
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+
+      val runningAllowListsList = runningSection.getElementsByTag("li")
+      runningAllowListsList.size() mustEqual 0
+      Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_running_empty")
+      )
+
+      val pausedAllowListsList = pausedSection.getElementsByTag("li")
+      pausedAllowListsList.size() mustEqual 1
+      pausedAllowListsList.get(0).text() must include(feature2)
+    }
+
+    "must display the page when the user is authorised and there are no allow lists for the service" in {
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
       when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List.empty))
 
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
-        .withSession("authToken" -> "Token some-token")
+      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
 
-      status(result) mustBe OK
+      status(result) mustBe 404
 
       val html = Jsoup.parse(contentAsString(result))
 
-      html.getElementsByAttributeValue("data-test-role", "service-summary-row").size() mustEqual 0
-      html.getElementsByAttributeValue("data-test-role", "admin-actions-list").size() mustEqual 0
-      Option(html.getElementById("no-features")) must not be(empty)
-    
+      val runningSection = Option(html.getElementById("allow-lists-running")).value
+      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
 
-    "must fail when the user is not authenticated (no auth token)" in:
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
+      Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_running_empty")
+      )
+      Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
+        messages("rlal.service_summary.allow_list_paused_empty")
+      )
+    }
+
+    "must fail when the user is not authenticated (no auth token)" in {
+      val request = FakeRequest(url)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+    }
 
-    "must fail when the user is not authorised" in:
+    "must fail when the user is not authorised" in {
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
-      val request = FakeRequest(routes.ServiceSummaryController.onPageLoad(service))
+      val request = FakeRequest(url)
         .withSession("authToken" -> "Token some-token")
 
       route(app, request).value.failed.futureValue
+    }
+  }

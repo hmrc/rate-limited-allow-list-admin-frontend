@@ -56,7 +56,7 @@ class ToggleNewUserOnboardingController @Inject()(
             case Some(metadata) =>
               Ok(view(formProvider().fill(!metadata.canIssueTokens), metadata))
             case None =>
-              Redirect(routes.ServiceSummaryController.onPageLoad(service))
+              Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
                 .flashing("rlal-notification" -> summon[Messages]("error.feature_not_found", service, feature))
 
 
@@ -70,14 +70,14 @@ class ToggleNewUserOnboardingController @Inject()(
               case Some(metadata) =>
                 BadRequest(view(formWithErrors.fill(!metadata.canIssueTokens), metadata))
               case None =>
-                Redirect(routes.ServiceSummaryController.onPageLoad(service))
+                Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
                 .flashing("rlal-notification" -> summon[Messages]("error.feature_not_found", service, feature))
             }
           },
           bool => connector.setCanIssueTokens(service, feature, bool).map(
             _ =>
               val successMessageKey = if bool then "rlal.toggle.success.resumed" else "rlal.toggle.success.paused"
-              Redirect(routes.ServiceSummaryController.onPageLoad(service))
+              Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
                 .flashing("rlal-notification" -> summon[Messages](successMessageKey, feature))
           )
         )

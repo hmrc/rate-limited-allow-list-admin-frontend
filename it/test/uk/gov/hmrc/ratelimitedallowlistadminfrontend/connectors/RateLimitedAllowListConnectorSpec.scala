@@ -21,20 +21,20 @@ import com.github.tomakehurst.wiremock.http.Fault
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, OK, NO_CONTENT}
+import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{IssuedTokensResponse, IssuedTokensSummary, TokenRequest, TokenResponse, FeatureSummary}
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.WireMockHelper
+import uk.gov.hmrc.http.test.WireMockSupport
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*
 
 import java.time.LocalDate
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.IssueTokenStatusUpdateRequest
 
-class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with ScalaFutures with IntegrationPatience with WireMockHelper {
+class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneAppPerSuite, WireMockSupport, ScalaFutures, IntegrationPatience {
 
-  private lazy val app: Application =
+  override def fakeApplication(): Application =
     GuiceApplicationBuilder()
       .configure(
         "microservice.services.rate-limited-allow-list.port" -> server.port(),
@@ -42,6 +42,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
       .build()
 
   private lazy val connector = app.injector.instanceOf[RateLimitedAllowListConnector]
+  private lazy val server = wireMockServer
 
   ".getFeatures" - {
     
@@ -75,9 +76,8 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
       connector.getFeatures("service")(using hc).failed.futureValue
     }
   }
-    
-  ".getFeaturesMetadata" - {
-    
+ 
+  ".getFeatureMetadata" - {
     val feature = "test-feature-value"
     val url = "/rate-limited-allow-list/services/service/features/test-feature-value/metadata"
     val hc = HeaderCarrier()
@@ -96,9 +96,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
       result mustEqual Some(validResponse)
     }
 
-    "must return a Nonetokens when the server responds with 404" in {
-      val validResponse = FeatureSummary("service", "feature-1", 10, true)
-
+    "must return a None when the server responds with 404" in {
       server.stubFor(
         get(urlMatching(url))
           .willReturn(
@@ -118,6 +116,61 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
       )
 
       connector.getFeatureMetadata("service", feature)(using hc).failed.futureValue
+    }
+  }
+
+  ".getFeatureReport" - {
+    val feature = "test-feature-value"
+    val url = "/rate-limited-allow-list/services/service/features/test-feature-value/report"
+    val freqKey = "frequency"
+    val freqValue = "daily"
+    val hc = HeaderCarrier()
+
+    "must return the metadata for the service's feature when the server responds with OK" in {
+      val validResponse = AllowListReport(
+        "service",
+        "feature-1",
+        100, 
+        List(
+          DailyReport(LocalDate.now(), 11),
+          DailyReport(LocalDate.now(), 12)
+        )
+      )
+
+      server.stubFor(
+        get(urlPathEqualTo(url))
+          .withQueryParam(freqKey, equalTo(freqValue))
+          .willReturn(
+            aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse)))
+          )
+      )
+
+      val result = connector.getFeatureReport("service", feature)(using hc).futureValue
+      result mustEqual Some(validResponse)
+    }
+
+    "must return a None when the server responds with 404" in {
+      server.stubFor(
+        get(urlPathEqualTo(url))
+          .withQueryParam(freqKey, equalTo(freqValue))
+          .willReturn(
+            aResponse().withStatus(404)
+          )
+      )
+
+      val result = connector.getFeatureReport("service", feature)(using hc).futureValue
+      result must be(empty)
+    }
+
+    "must fail when the server responds with anything else" in {
+
+      server.stubFor(
+        get(urlPathEqualTo(url))
+          .withQueryParam(freqKey, equalTo(freqValue))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
+      )
+
+      connector.getFeatureReport("service", feature)(using hc).failed.futureValue
     }
   }
     
@@ -291,40 +344,4 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec with Matchers with S
     }
   }
 
-  ".issuedTokens" - {
-
-    val url = "/rate-limited-allow-list/services/service/features/feature/issued-tokens"
-    val hc = HeaderCarrier()
-    val validResponse = IssuedTokensResponse(List(IssuedTokensSummary(LocalDate.now, 1)))
-
-    "must return the number of tokens when the server responds with OK" in {
-
-      server.stubFor(
-        get(urlMatching(url))
-          .willReturn(aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse))))
-      )
-
-      connector.issuedTokens("service", "feature")(using hc).futureValue mustBe validResponse
-    }
-
-    "must fail when the server responds with anything else" in {
-
-      server.stubFor(
-        get(urlMatching(url))
-          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
-      )
-
-      connector.issuedTokens("service", "feature")(using hc).failed.futureValue
-    }
-
-    "must fail when the server connection fails" in {
-
-      server.stubFor(
-        get(urlMatching(url))
-          .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
-      )
-
-      connector.issuedTokens("service", "feature")(using hc).failed.futureValue
-    }
-  }
 }

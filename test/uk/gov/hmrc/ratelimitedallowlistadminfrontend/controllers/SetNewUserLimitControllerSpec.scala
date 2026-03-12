@@ -114,10 +114,10 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(service).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("rlal.set.success", feature)
+      flash(result).get("rlal-notification").value mustEqual messages("rlal.set_new.success", feature)
 
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:

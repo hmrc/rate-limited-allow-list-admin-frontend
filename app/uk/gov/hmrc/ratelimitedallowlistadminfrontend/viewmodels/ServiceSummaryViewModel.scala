@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels
 
-import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
 
-final case class IssuedTokensResponse(summaries: Seq[IssuedTokensSummary])
+case class ServiceSummaryViewModel(running: Seq[String], paused: Seq[String])
 
-object IssuedTokensResponse:
-  given OFormat[IssuedTokensResponse] = Json.format
+object ServiceSummaryViewModel:
+
+  def apply(summaries: Seq[FeatureSummary]): ServiceSummaryViewModel = {
+    summaries.partition(_.canIssueTokens) match
+      case (running, paused) =>
+        ServiceSummaryViewModel(
+          running.map(_.feature).sorted,
+          paused.map(_.feature).sorted
+        )
+  }

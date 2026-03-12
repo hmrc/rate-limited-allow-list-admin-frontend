@@ -102,7 +102,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(service).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("error.feature_not_found", service, feature)
@@ -131,7 +131,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(service).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.toggle.success.paused", feature)
@@ -152,6 +152,21 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val html = Jsoup.parse(contentAsString(result))
       html.getElementsByTag("form").size() mustEqual 1
 
+    "redirect the user on when there is an error with the form and and with flash error to when there is not data" in:
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(mockConnector.getFeatureMetadata(any(), any())(using any())).thenReturn(Future.successful(None))
+
+      val request = FakeRequest(onSubmit)
+        .withSession("authToken" -> "Token some-token")
+        .withFormUrlEncodedBody("value" -> "")
+
+      val result = route(app, request).value
+
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
+
+      val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+      flash(result).get("rlal-notification").value mustEqual messages("error.feature_not_found", service, feature)
 
     "fail when the user is not authenticated (no auth token)" in:
       val request = FakeRequest(onSubmit)

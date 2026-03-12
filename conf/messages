@@ -17,31 +17,46 @@ rlal.index.heading = Administer rate limited allow lists
 rlal.index.breadcrumb = Home
 rlal.index.p = Which service you would like to manage the allow lists?
 
-rlal.service_summary.title = Manage the allow lists for {0}
-rlal.service_summary.heading = Manage the allow lists for {0}
+rlal.service_summary.title = Allow lists for {0}
+rlal.service_summary.heading = Allow lists for {0}
 rlal.service_summary.breadcrumb = {0}
-rlal.service_summary.table.caption = Current allow lists for {0}
-rlal.service_summary.table.feature = Allow lists
-rlal.service_summary.table.count = Count
-rlal.service_summary.table.enabled = Enabled
-rlal.service_summary.table.actions = Actions
-rlal.service_summary.action.increase = Increase the number of new user to onboard
-rlal.service_summary.action.set = Set the number of new users to onboard
-rlal.service_summary.no_features = There are no features setup for this service. To onboard a new service and feature, check the README of the rate-limited-allow-list service.
+rlal.service_summary.running.h2 = Active allow lists
+rlal.service_summary.allow_list_running_empty = There are no running allow lists.
+rlal.service_summary.paused.h2 = Paused allow lists
+rlal.service_summary.allow_list_paused_empty = There are no paused allow lists.
 
-rlal.increase.title = Increase the number of new user to onboard
-rlal.increase.heading = Increase the number of new user to onboard
+rlal.service_summary.summary_list.currentUserCount.label = Current user count
+rlal.service_summary.summary_list.newUserCount.label = New user count
+rlal.service_summary.summary_list.newUserCount.action = Increase
+rlal.service_summary.summary_list.newUserCount.action.visuallyHidden = Increase the number of new users to onboard for {0}
+rlal.service_summary.summary_list.totalUserCount.label = Total user count
+rlal.service_summary.summary_list.totalUserCount.action = Set user count
+rlal.service_summary.summary_list.totalUserCount.action.visuallyHidden = Set the total number of number of users for this feature onboard
+rlal.service_summary.summary_list.onboardingStatus.label = Allow list enabled
+rlal.service_summary.summary_list.onboardingStatus.value.Paused = No
+rlal.service_summary.summary_list.onboardingStatus.value.Running = Yes
+rlal.service_summary.summary_list.onboardingStatus.action.Paused = Resume
+rlal.service_summary.summary_list.onboardingStatus.action.Running = Pause
+rlal.service_summary.no_features = There are no features setup for this service.
+
+rlal.allow_list_summary.title = Manage {0}
+rlal.allow_list_summary.heading = Manage {0}
+rlal.allow_list_summary.breadcrumb = {0}
+rlal.allow_list_summary.not_found = The allow list you are searching for cannot be found.
+
+rlal.increase.title = Increase the number of new users to onboard
+rlal.increase.heading = Increase the number of new users to onboard
 rlal.increase.breadcrumb = Increase users
 rlal.increase.values.label = Increment value
 rlal.increase.values.hint = Enter a positive whole number to increment the number of new users to be onboarded
 rlal.increase.success = Successfully increased the number of new users to onboard to {0}
 
-rlal.set.title = Set the number of new users to onboard
-rlal.set.heading = Set the number of new users to onboard
-rlal.set.breadcrumb = Set users
-rlal.set.values.label = Number of new users
-rlal.set.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
-rlal.set.success = Successfully set the number of new users to onboard to {0}
+rlal.set_new.title = Set the number of new users to onboard
+rlal.set_new.heading = Set the number of new users to onboard
+rlal.set_new.breadcrumb = Set new users
+rlal.set_new.values.label = Total number of new users
+rlal.set_new.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
+rlal.set_new.success = Successfully set the number of new users to onboard to {0}
 
 rlal.toggle.title.on = Pause onboarding new users
 rlal.toggle.title.off = Resume onboarding of new users
