@@ -24,12 +24,11 @@ import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import play.api.data.{Form, FormError}
 import play.api.i18n.Messages
 import play.api.test.Helpers.stubMessages
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.Generators
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.utils.Generators
 
 import java.time.LocalDate
 
-class DateMappingsSpec extends AnyFreeSpec with Matchers with ScalaCheckPropertyChecks with Generators with OptionValues
-  with Mappings {
+class DateMappingsSpec extends AnyFreeSpec, Matchers, ScalaCheckPropertyChecks, Generators, OptionValues, Mappings {
 
   private implicit val messages: Messages = stubMessages()
 
