@@ -21,10 +21,7 @@ import play.api.data.Form
 import play.api.data.Forms.mapping
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
 
-import javax.inject.{Inject, Singleton}
-
-@Singleton()
-class BooleanFormProvider @Inject()() extends Mappings {
+class BooleanFormProvider extends Mappings {
 
   def apply(): Form[Boolean] = Form(
     mapping(
