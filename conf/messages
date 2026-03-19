@@ -9,6 +9,7 @@ error.wholeNumber = Enter a whole number
 error.nonNumeric = Enter a number value
 error.nonNegative = Enter a positive whole number
 error.boolean = Enter a boolean value
+error.string.length = The {0} must be {1} characters or less
 
 error.feature_not_found = Feature {1} not found for service {0}
 
