@@ -76,6 +76,15 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     Mockito.reset(stubBehaviour)
 
   "GET /" should:
+    "redirect user to the onPageLoad endpoint" in:
+      val request = FakeRequest(routes.AllowListSummaryController.root(service, allowList))
+        .withSession("authToken" -> "Token some-token")
+
+      val result = route(app, request).value
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual url.url
+
+  "GET /manage" should:
     "must display the page when the user is authorised and there are features for the service" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
       when(mockConnector.getFeatureMetadata(any(), any())(using any())).thenReturn(Future.successful(Some(metadata)))

@@ -19,11 +19,9 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.Logging
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.BooleanFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.PredicateBuilder
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ToggleNewUserOnboardingView
 
 import javax.inject.{Inject, Singleton}
@@ -33,21 +31,14 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class ToggleNewUserOnboardingController @Inject()(
   mcc: MessagesControllerComponents,
-  auth: FrontendAuthComponents,
+  auth: Auth,
   connector: RateLimitedAllowListConnector,
   formProvider: BooleanFormProvider,
   view: ToggleNewUserOnboardingView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  private def authorised(service: String) =
-    auth.authorizedAction(
-      continueUrl = routes.ServiceSummaryController.onPageLoad(service),
-      predicate = PredicateBuilder.forService(service).asAdmin,
-      retrieval = Retrieval.username
-    )
-
   def onPageLoad(service: String, feature: String): Action[AnyContent] =
-    authorised(service).async:
+    auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         connector
@@ -57,11 +48,11 @@ class ToggleNewUserOnboardingController @Inject()(
               Ok(view(formProvider().fill(!metadata.canIssueTokens), metadata))
             case None =>
               Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
-                .flashing("rlal-notification" -> summon[Messages]("error.feature_not_found", service, feature))
+                .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
 
 
   def onSubmit(service: String, feature: String): Action[AnyContent] =
-    authorised(service).async:
+    auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         formProvider().bindFromRequest().fold(
@@ -71,12 +62,12 @@ class ToggleNewUserOnboardingController @Inject()(
                 BadRequest(view(formWithErrors.fill(!metadata.canIssueTokens), metadata))
               case None =>
                 Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
-                .flashing("rlal-notification" -> summon[Messages]("error.feature_not_found", service, feature))
+                .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
             }
           },
           bool => connector.setCanIssueTokens(service, feature, bool).map(
             _ =>
-              val successMessageKey = if bool then "rlal.toggle.success.resumed" else "rlal.toggle.success.paused"
+              val successMessageKey = if bool then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
               Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
                 .flashing("rlal-notification" -> summon[Messages](successMessageKey, feature))
           )

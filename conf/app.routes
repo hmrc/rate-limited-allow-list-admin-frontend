@@ -5,10 +5,16 @@ GET        /assets/*file            controllers.Assets.versioned(path = "/public
 
 GET   /                                                         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.onPageLoad()
 
+GET   /services/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onPageLoad()
+POST  /services/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onSubmit()
+
+GET   /services/:service/allow-lists                            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onPageLoad(service)
+POST  /services/:service/allow-lists                            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onSubmit(service)
+
 GET   /services/:service                                        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ServiceSummaryController.onPageLoad(service)
 
-GET   /services/:service/allow-list/:allowList                  uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList)
-GET   /services/:service/allow-list/:allowList/manage           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.onPageLoad(service, allowList)
+GET   /services/:service/allow-lists/:allowList                 uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList)
+GET   /services/:service/allow-lists/:allowList/manage          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.onPageLoad(service, allowList)
 
 GET   /services/:service/features/:feature/manage/toggle        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onPageLoad(service: String, feature: String)
 POST  /services/:service/features/:feature/manage/toggle        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onSubmit(service: String, feature: String)

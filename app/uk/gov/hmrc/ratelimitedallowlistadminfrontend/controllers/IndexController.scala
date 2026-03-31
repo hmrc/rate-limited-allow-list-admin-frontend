@@ -19,30 +19,28 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, ResourceType, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IndexView
 
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class IndexController @Inject()(
   mcc: MessagesControllerComponents,
-  auth: FrontendAuthComponents,
+  auth: Auth,
+  connector: RateLimitedAllowListConnector,
   view: IndexView
-) extends FrontendController(mcc), I18nSupport, Logging:
+)(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  private val authenticated =
-    auth.authenticatedAction(
-      continueUrl = routes.IndexController.onPageLoad(),
-      retrieval = Retrieval.locations(Some(ResourceType("rate-limited-allow-list-admin-frontend")))
-    )
-
-  def onPageLoad(): Action[AnyContent] =
-    authenticated {
+  def onPageLoad(): Action[AnyContent] = {
+    auth.authenticated().async {
       request =>
         given Request[?] = request
-        val resources = request.retrieval.toList.sortBy(_.resourceLocation.value)
-        Ok(view(resources))
+        connector.getServices().map:
+          activeServices =>
+            Ok(view(activeServices.sorted))
     }
+  }
 

@@ -19,11 +19,8 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.PredicateBuilder
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.ServiceSummaryViewModel
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ServiceSummaryView
 
@@ -33,20 +30,13 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class ServiceSummaryController @Inject()(
                                           mcc: MessagesControllerComponents,
-                                          auth: FrontendAuthComponents,
+                                          auth: Auth,
                                           connector: RateLimitedAllowListConnector,
                                           view: ServiceSummaryView
                                         )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
-
-  private def authorised(service: String) =
-    auth.authorizedAction(
-      continueUrl = routes.ServiceSummaryController.onPageLoad(service),
-      predicate = PredicateBuilder.forService(service).asAdmin,
-      retrieval = Retrieval.username
-    )
-
+ 
   def onPageLoad(service: String): Action[AnyContent] =
-    authorised(service).async {
+    auth.authorized.admin.service(service).async {
       request =>
         given Request[?] = request
         for

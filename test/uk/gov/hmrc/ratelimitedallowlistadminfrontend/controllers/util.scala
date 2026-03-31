@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
+import org.jsoup.select.Elements
+import org.scalatest.OptionValues.given
 
-import play.api.data.Form
-import play.api.data.Forms.mapping
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
-
-class IntFormProvider extends Mappings {
-  def apply(): Form[Int] = Form(
-    mapping(
-      "value" -> int().verifying(minimumValue(0, "error.nonNegative"))
-    )(identity)(Some.apply)
-  )
+extension (elem: Elements) {
+  def assertNotNull: Elements =
+    Option(elem).value
 }

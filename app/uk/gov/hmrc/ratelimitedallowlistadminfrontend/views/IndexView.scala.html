@@ -18,25 +18,42 @@
 
 @this(layout: Layout, govukBreadcrumbs: GovukBreadcrumbs)
 
-@(resources: Seq[Resource])(implicit request: Request[_], messages: Messages)
+@(activeServices: Seq[String])(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(crumb.home)
 }
 
 @layout(pageTitle = Some(messages("rlal.index.title")), beforeContent = Some(breadcrumbs)) {
+    <h1 class="govuk-heading-l">@messages("rlal.index.heading")</h1>
 
-  <h1 class="govuk-heading-l">@messages("rlal.index.heading")</h1>
+    <section id="services-section">
+        <h2 class="govuk-heading-m">@messages("rlal.index.active.h2")</h2>
+        @if(activeServices.nonEmpty){
+            <p class="govuk-body">@messages("rlal.index.active.p")</p>
+            <ul id="services-list" class="govuk-list govuk-list--bullet">
 
-  <p class="govuk-body">@messages("rlal.index.p")</p>
+            @activeServices.map { serviceName =>
+                <li>
+                    <a href="@routes.ServiceSummaryController.onPageLoad(serviceName)" class="govuk-link">
+                      @serviceName
+                    </a>
+                </li>
+            }
 
-  <ul id="services-list" class="govuk-list govuk-list--bullet">
-    @resources.map { resource =>
-      <li>
-        <a href="@routes.ServiceSummaryController.onPageLoad(resource.resourceLocation.value)" class="govuk-link">
-          @resource.resourceLocation.value
-        </a>
-      </li>
-   }
-  </ul>
+            </ul>
+        }else{
+            <p class="govuk-body">@messages("rlal.index.active.empty")</p>
+        }
+    </section>
+
+
+    <section id="actions" class="govuk-!-padding-top-2">
+        <h2 class="govuk-heading-m">@messages("rlal.index.task.h2")</h2>
+        <ul class="govuk-list">
+            <li>
+                <a class="govuk-link" href="@routes.SelectCreateAllowListController.onPageLoad()">@messages("rlal.index.tasks.create")</a>
+            </li>
+        </ul>
+    </section>
 }

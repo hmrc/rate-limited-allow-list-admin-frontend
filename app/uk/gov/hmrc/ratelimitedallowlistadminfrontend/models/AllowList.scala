@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
-
-import play.api.data.Form
-import play.api.data.Forms.mapping
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
-
-class IntFormProvider extends Mappings {
-  def apply(): Form[Int] = Form(
-    mapping(
-      "value" -> int().verifying(minimumValue(0, "error.nonNegative"))
-    )(identity)(Some.apply)
-  )
+object AllowList {
+  val REGEX_PATTERN = "^[a-zA-Z0-9-]+$"
 }

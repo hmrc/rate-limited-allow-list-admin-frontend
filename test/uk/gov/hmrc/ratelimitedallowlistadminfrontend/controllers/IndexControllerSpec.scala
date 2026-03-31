@@ -33,7 +33,8 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
+import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -41,28 +42,29 @@ import scala.concurrent.Future
 class IndexControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
   
   private val stubBehaviour = mock[StubBehaviour]
-  private val resources = List(
-    Resource.from("rate-limited-allow-list-admin-frontend", "bar"),
-    Resource.from("rate-limited-allow-list-admin-frontend", "foo")
-  )
+  private val connectorMock = mock[RateLimitedAllowListConnector]
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
     new GuiceApplicationBuilder()
       .overrides(
-        bind[FrontendAuthComponents].toInstance(frontendAuthComponents)
+        bind[FrontendAuthComponents].toInstance(frontendAuthComponents),
+        bind[RateLimitedAllowListConnector].toInstance(connectorMock),
       )
       .build()
 
   given Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-  
+
   override def beforeEach(): Unit =
     super.beforeEach()
-    Mockito.reset(stubBehaviour)
+    Mockito.reset(stubBehaviour, connectorMock)
 
   "GET /" should:
     "must display the page when the user is authorised" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      val serviceNames = List("service-1", "service-2")
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.unit)
+      when(connectorMock.getServices()(using any())).thenReturn(Future.successful(serviceNames))
+
       val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
         .withSession("authToken" -> "Token some-token")
 
@@ -70,13 +72,21 @@ class IndexControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, Op
 
       status(result) mustBe OK
       val html = Jsoup.parse(contentAsString(result))
-      val services = Option(html.getElementById("services-list")).value
+      val services = Option(html.getElementById("services-section")).value
 
-      services.getElementsByTag("li").size() mustEqual 2
+      val list = Option(services.getElementById("services-list")).value
+      list.nodeName() mustEqual "ul"
 
-      services.text() must include(resources(0).resourceLocation.value)
-      services.text() must include(resources(1).resourceLocation.value)
+      import scala.jdk.CollectionConverters.*
 
+      val elements = list.getElementsByTag("li").assertNotNull.asScala.toList
+                       .flatMap(_.getElementsByTag("a").assertNotNull.asScala.toList)
+
+      elements.size mustEqual serviceNames.size
+      elements.zip(serviceNames).foreach {
+        case (elem, expectedServiceName) =>
+          elem.text() must include(expectedServiceName)
+      }
 
     "must fail when the user is not authenticated (no auth token)" in:
       val request = FakeRequest(GET, routes.IndexController.onPageLoad().url) 

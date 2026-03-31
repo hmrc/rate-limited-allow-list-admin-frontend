@@ -23,6 +23,14 @@ class StringFormProvider extends Mappings {
 
   def apply(fieldName: String, maxStrLen: Int): Form[String] =
     Form(
-      "value" -> text().verifying(maxLength(maxStrLen, "error.string.length", fieldName, maxStrLen))
+      "value" -> text()
+        .verifying(maxLength(maxStrLen, "error.string.length", fieldName, maxStrLen))
   )
+  
+  def apply(fieldName: String, maxStrLen: Int, regex: String, regexErrorMessage: String): Form[String] =
+    Form(
+      "value" -> text()
+        .verifying(maxLength(maxStrLen, "error.string.length", fieldName, maxStrLen))
+        .verifying(regexp(regex, regexErrorMessage))
+    )
 }
