@@ -39,6 +39,16 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
 
   private val rateLimitedAllowListService: Service = configuration.get[Service]("microservice.services.rate-limited-allow-list")
 
+  def getServices()(using HeaderCarrier): Future[Seq[String]] =
+    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services")
+      .execute[HttpResponse]
+      .flatMap { response =>
+        response.status match {
+          case OK        => Future.successful(response.json.as[List[String]])
+          case status    => Future.failed(UnexpectedResponseException(status))
+        }
+      }
+
   def getFeatures(service: String)(using HeaderCarrier): Future[Seq[FeatureSummary]] =
     httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/features")
       .execute[HttpResponse]

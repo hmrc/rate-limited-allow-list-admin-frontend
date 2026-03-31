@@ -44,6 +44,35 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
   private lazy val connector = app.injector.instanceOf[RateLimitedAllowListConnector]
   private lazy val server = wireMockServer
 
+  ".getServices" - {
+    val url = "/rate-limited-allow-list/services"
+    val hc = HeaderCarrier()
+
+    "must return the metadata for all the service's features when the server responds with OK" in {
+      val validResponse = List("service-1", "service-2", "service-3")
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(
+            aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse)))
+          )
+      )
+
+      val result = connector.getServices()(using hc).futureValue
+      result mustEqual validResponse
+    }
+
+    "must fail when the server responds with anything else" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
+      )
+
+      connector.getServices()(using hc).failed.futureValue
+    }
+  }
+
   ".getFeatures" - {
     
     val url = "/rate-limited-allow-list/services/service/features"
