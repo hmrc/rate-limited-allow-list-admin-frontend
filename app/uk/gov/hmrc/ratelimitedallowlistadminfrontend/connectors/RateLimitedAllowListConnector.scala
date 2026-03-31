@@ -17,7 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors
 
 import play.api.{Configuration, Logging}
-import play.api.http.Status.{NOT_FOUND, NO_CONTENT, OK}
+import play.api.http.Status.{CREATED, NOT_FOUND, NO_CONTENT, OK}
 import play.api.libs.json.{Json, Reads}
 import play.api.libs.ws.writeableOf_JsValue
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
@@ -45,6 +45,17 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
       .flatMap { response =>
         response.status match {
           case OK        => Future.successful(response.json.as[List[String]])
+          case status    => Future.failed(UnexpectedResponseException(status))
+        }
+      }
+
+  def createAllowList(service: String, allowList: String)(using HeaderCarrier): Future[Done] =
+    httpClient.post(url"$rateLimitedAllowListService/rate-limited-allow-list/services/$service/allow-lists")
+      .withBody(Json.toJson(CreateAllowListRequest(allowList)))
+      .execute[HttpResponse]
+      .flatMap { response =>
+        response.status match {
+          case CREATED   =>  Future.successful(Done)
           case status    => Future.failed(UnexpectedResponseException(status))
         }
       }
