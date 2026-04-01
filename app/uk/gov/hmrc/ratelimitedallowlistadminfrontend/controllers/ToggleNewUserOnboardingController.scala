@@ -21,6 +21,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.BooleanFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ToggleNewUserOnboardingView
 

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions
 
 import play.api.Logging
 import play.api.mvc.AnyContent
 import uk.gov.hmrc.internalauth.client.*
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 
 import javax.inject.Inject
 

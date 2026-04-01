@@ -24,14 +24,13 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.select.{Select, SelectItem}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SelectCreateAllowListView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
-
-//trait RequireRetrievals extends ActionFilter[CurriedAuthenticatedRequest[Set[Resource]]]
 
 @Singleton
 class SelectCreateAllowListController @Inject()(
