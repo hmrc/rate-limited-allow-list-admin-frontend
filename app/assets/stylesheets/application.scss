@@ -1,1 +1,6 @@
 @import "lib/govuk-frontend/dist/govuk/base";
+
+.govuk-notification-banner__error {
+    background: #D4351C;
+    border-color: #D4351C;
+}

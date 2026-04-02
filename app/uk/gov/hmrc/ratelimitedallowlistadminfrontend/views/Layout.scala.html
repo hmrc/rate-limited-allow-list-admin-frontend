@@ -30,9 +30,14 @@
 
 @(pageTitle: Option[String] = None, beforeContent: Option[Html] = None)(contentBlock: Html)(implicit request: RequestHeader, messages: Messages)
 
+@head = {
+    <link rel="stylesheet" href="@controllers.routes.Assets.versioned("stylesheets/application.css")" >
+    @autocompleteCss()
+}
+
 @govukLayout(
     pageTitle = pageTitle,
-    headBlock = Some(hmrcInternalHead(Some(autocompleteCss()))),
+    headBlock = Some(hmrcInternalHead(Some(head))),
     headerBlock = Some(hmrcInternalHeader(InternalHeader(
       homepageUrl = appConfig.homepageUrl,
       serviceName = Some(messages("service.name")),
