@@ -17,7 +17,7 @@
 @import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
 
 @this(layout: Layout,
-      govukNotificationBanner: GovukNotificationBanner,
+      banner: BannerComponent,
       govukBreadcrumbs: GovukBreadcrumbs,
       govukSummaryList: GovukSummaryList,
 )
@@ -37,9 +37,7 @@
     <span class="govuk-caption-l">@{service}</span>
     <h1 class="govuk-heading-l">@messages("rlal.allow_list_summary.heading", feature)</h1>
 
-    @request.flash.get("rlal-notification").map { message =>
-        @govukNotificationBanner(NotificationBanner(bannerType = Some("success"), title = Text(messages("site.success")), content = Text(message)))
-    }
+    @banner()
 
     <section class="govuk-body">
         @if(vm.nonEmpty) {

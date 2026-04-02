@@ -16,7 +16,11 @@
 
 @import uk.gov.hmrc.internalauth.client.Resource
 
-@this(layout: Layout, govukBreadcrumbs: GovukBreadcrumbs)
+@this(
+    layout: Layout,
+    govukBreadcrumbs: GovukBreadcrumbs,
+    banner: BannerComponent
+)
 
 @(activeServices: Seq[String])(implicit request: Request[_], messages: Messages)
 
@@ -26,6 +30,8 @@
 
 @layout(pageTitle = Some(messages("rlal.index.title")), beforeContent = Some(breadcrumbs)) {
     <h1 class="govuk-heading-l">@messages("rlal.index.heading")</h1>
+
+    @banner()
 
     <section id="services-section">
         <h2 class="govuk-heading-m">@messages("rlal.index.active.h2")</h2>
