@@ -24,7 +24,7 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.select.{Select, SelectItem}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{Auth, RequireRetrievals}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SelectCreateAllowListView
 
@@ -37,13 +37,14 @@ class SelectCreateAllowListController @Inject()(
                                                  mcc: MessagesControllerComponents,
                                                  auth: Auth,
                                                  formProvider: StringFormProvider,
+                                                 requireRetrievals: RequireRetrievals,
                                                  view: SelectCreateAllowListView
                                                ) extends FrontendController(mcc), I18nSupport, Logging:
   
   import SelectCreateAllowListController.*
 
   def onPageLoad(): Action[AnyContent] =
-    auth.authenticated.retrieval.locations().async { request =>
+    (auth.authenticated.retrieval.locations() andThen requireRetrievals).async { request =>
       given AuthenticatedRequest[AnyContent, Set[Resource]] = request
       if request.retrieval.isEmpty then {
         logger.info("No services returned for user on load. Check if the user has been added to a team")
@@ -53,7 +54,7 @@ class SelectCreateAllowListController @Inject()(
     }
 
   def onSubmit(): Action[AnyContent] =
-    auth.authenticated.retrieval.locations().async { request =>
+    (auth.authenticated.retrieval.locations() andThen requireRetrievals).async { request =>
       given AuthenticatedRequest[AnyContent, Set[Resource]] = request
       if request.retrieval.isEmpty then {
         logger.info("No services returned for user on submit. Check if the user has been added to a team")
@@ -74,7 +75,7 @@ class SelectCreateAllowListController @Inject()(
     }
     
 
-object SelectCreateAllowListController:
+object SelectCreateAllowListController {
   extension (resources: Set[Resource])
     def containsResource(name: String): Boolean = resources.exists(_.resourceLocation.value == name)
 
@@ -90,3 +91,4 @@ object SelectCreateAllowListController:
         AccessibleAutocomplete(showAllValues = true)
       ))
     }
+}

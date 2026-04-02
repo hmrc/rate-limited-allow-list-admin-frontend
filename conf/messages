@@ -3,6 +3,7 @@ service.text = This is your new service
 
 site.success = Success
 site.submit = Submit
+site.error = Error
 
 error.required = Enter a value
 error.wholeNumber = Enter a whole number
