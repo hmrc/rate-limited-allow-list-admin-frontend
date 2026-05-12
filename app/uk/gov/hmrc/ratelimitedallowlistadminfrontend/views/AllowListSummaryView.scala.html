@@ -39,12 +39,20 @@
 
     @banner()
 
-    <section class="govuk-body">
-        @if(vm.nonEmpty) {
-            @govukSummaryList(vm.get.summaryList)
-        }
-        @if(vm.isEmpty) {
+    @if(vm.nonEmpty) {
+        <section class="govuk-body">
+            <h2 class="govuk-heading-m">@messages("rlal.allow_list_summary.users.heading")</h2>
+            @govukSummaryList(vm.get.userSummary)
+        </section>
+
+        <section class="govuk-body govuk-!-padding-top-6">
+            <h2 class="govuk-heading-m">@messages("rlal.allow_list_summary.allowList.heading")</h2>
+            @govukSummaryList(vm.get.allowListSummary)
+        </section>
+    }
+    @if(vm.isEmpty) {
+        <section class="govuk-body">
             <p id="not-found">@messages("rlal.allow_list_summary.not_found")</p>
-        }
-    </section>
+        </section>
+    }
 }

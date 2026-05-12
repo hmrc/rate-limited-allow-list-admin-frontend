@@ -37,22 +37,24 @@ rlal.service_summary.allow_list_running_empty = There are no running allow lists
 rlal.service_summary.paused.h2 = Paused allow lists
 rlal.service_summary.allow_list_paused_empty = There are no paused allow lists.
 
-rlal.service_summary.summary_list.currentUserCount.label = Onboarded users
-rlal.service_summary.summary_list.newUserCount.label = New users
-rlal.service_summary.summary_list.newUserCount.action = Increase
-rlal.service_summary.summary_list.newUserCount.action.visuallyHidden = Increase the number of new users to onboard for {0}
-rlal.service_summary.summary_list.totalUserCount.label = Total users
-rlal.service_summary.summary_list.totalUserCount.action = Set onboarding count
-rlal.service_summary.summary_list.totalUserCount.action.visuallyHidden = Set the total number of number of new users to onboard for this allow list
-rlal.service_summary.summary_list.onboardingStatus.label = Onboarding status
-rlal.service_summary.summary_list.onboardingStatus.value.Paused = No
-rlal.service_summary.summary_list.onboardingStatus.value.Running = Yes
-rlal.service_summary.summary_list.onboardingStatus.action.Paused = Resume
-rlal.service_summary.summary_list.onboardingStatus.action.Running = Pause
-rlal.service_summary.no_features = There are no features setup for this service.
 
-rlal.allow_list_summary.title = Manage {0}
-rlal.allow_list_summary.heading = Manage {0}
+rlal.allow_list_summary.title = View and manage {0}
+rlal.allow_list_summary.heading = View and manage {0}
+rlal.allow_list_summary.users.heading = User onboarding summary
+rlal.allow_list_summary.users.currentUserCount.label = Onboarded users
+rlal.allow_list_summary.users.newUserCount.label = New user limit
+rlal.allow_list_summary.users.newUserCount.action.incr = Increase
+rlal.allow_list_summary.users.newUserCount.action.incr.visuallyHidden = Increase the number of new users to onboard for this allow list
+rlal.allow_list_summary.users.newUserCount.action.set = Set
+rlal.allow_list_summary.users.newUserCount.action.set.visuallyHidden = Set the total number of number of new users to onboard for this allow list
+rlal.allow_list_summary.users.totalUserCount.label = Total
+rlal.allow_list_summary.allowList.heading = Allow list settings summary
+rlal.allow_list_summary.allowList.onboardingStatus.label = Onboarding new users
+rlal.allow_list_summary.allowList.onboardingStatus.value.Paused = No
+rlal.allow_list_summary.allowList.onboardingStatus.value.Running = Yes
+rlal.allow_list_summary.allowList.onboardingStatus.action.Paused = Resume
+rlal.allow_list_summary.allowList.onboardingStatus.action.Running = Pause
+
 rlal.allow_list_summary.breadcrumb = {0}
 rlal.allow_list_summary.not_found = The allow list you are searching for cannot be found.
 
