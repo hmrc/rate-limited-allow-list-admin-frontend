@@ -39,7 +39,7 @@
     @formHelper(action = routes.IncreaseNewUserLimitController.onSubmit(service, feature), Symbol("autocomplete") -> "off") {
         <fieldset class="govuk-fieldset">
 
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l govuk-!-margin-0">
                 <span class="govuk-caption-l">@service</span>
                 <h1 class="govuk-heading-l">@messages("rlal.increase.heading")</h1>
             </legend>
@@ -48,9 +48,51 @@
                 @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
             }
 
+            <div class="govuk-inset-text govuk-!-margin-top-0">
+                <div>
+                    <div class="govuk-heading-m">@messages("rlal.increase.guidance.heading") </div>
+                </div>
+
+                <div>
+                    <div class="govuk-heading-s govuk-!-margin-bottom-1">Before</div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.currentUserCount.label")</span>
+                        <span>@messages("rlal.increase.guidance.before.sep")</span>
+                        <span>90.</span>
+                    </div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.newUserCount.label")</span>
+                        <span>@messages("rlal.increase.guidance.before.sep")</span>
+                        <span>10.</span>
+                    </div>
+                </div>
+
+                <div class="govuk-!-margin-top-4">
+                    <div class="govuk-heading-s govuk-!-margin-bottom-1">Change</div>
+                    <div>@messages("rlal.increase.guidance.change")</div>
+                </div>
+
+                <div class="govuk-!-margin-top-4">
+                    <div class="govuk-heading-s govuk-!-margin-bottom-1">After</div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.currentUserCount.label")</span>
+                        <span>@messages("rlal.increase.guidance.after.sep")</span>
+                        <span>90.</span>
+                    </div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.newUserCount.label")</span>
+                        <span>@messages("rlal.increase.guidance.after.sep")</span>
+                        <span>15.</span>
+                    </div>
+                </div>
+            </div>
+
             @govukInput(
                 Input(
-                    label = Label(content = Text(messages("rlal.increase.values.label"))),
+                    label = Label(
+                        classes = "govuk-label--m",
+                        content = Text(messages("rlal.increase.values.label"))
+                    ),
                     hint = Some(Hint(content = Text(messages("rlal.increase.values.hint"))))
                 ).withFormField(form("value"))
             )
@@ -58,4 +100,4 @@
             @govukButton(Button(content = Text(messages("site.submit"))))
         </fieldset>
     }
-}/.
+}
