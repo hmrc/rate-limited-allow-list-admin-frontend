@@ -85,13 +85,6 @@ rlal.set_new.values.label = Total number of new users
 rlal.set_new.values.hint = Enter a positive whole number
 rlal.set_new.flash.success = Successfully set the number of new users to onboard to {0}
 
-rlal.set_total.title = Set the total number of users to onboard
-rlal.set_total.heading = Set the total number of users to onboard
-rlal.set_total.breadcrumb = Set total users
-rlal.set_total.values.label = Total number of users
-rlal.set_total.values.hint = Enter a positive whole number for the total number of users that should be onboarded. Set to 0 to stop onboarding.
-rlal.set_total.success = Successfully set the total number of users to {0}
-
 rlal.toggle.title.on = Pause onboarding new users
 rlal.toggle.title.off = Resume onboarding of new users
 rlal.toggle.heading.on = Pause onboarding new users
