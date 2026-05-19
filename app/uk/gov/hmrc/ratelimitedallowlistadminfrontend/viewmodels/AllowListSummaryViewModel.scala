@@ -64,13 +64,7 @@ object AllowListSummaryViewModel:
                   "rlal.allow_list_summary.users.newUserCount.action.set",
                   routes.SetNewUserLimitController.onPageLoad(service, feature).url
                 ).withVisuallyHiddenText(messages("rlal.allow_list_summary.users.newUserCount.action.set.visuallyHidden"))
-
               )
-            ),
-            SummaryListRowViewModel(
-              "rlal.allow_list_summary.users.totalUserCount.label",
-              ValueViewModel((report.currentUserCount + tokens).toString),
-              Seq.empty
             )
           )
         )
