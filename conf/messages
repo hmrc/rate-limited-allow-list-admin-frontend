@@ -12,7 +12,6 @@ error.nonNegative = Enter a positive whole number
 error.boolean = Enter a boolean value
 error.string.length = The {0} must be {1} characters or less
 
-error.flash.service_not_found = Service {1} not found
 error.flash.feature_not_found = Feature {1} not found for service {0}
 error.flash.retrievals_empty = There was an error fetching the services that you can manage. If you need support reach out to the team that owns this service which can be found in Catalogue.
 
