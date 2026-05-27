@@ -42,8 +42,4 @@ object Service {
 
         Service(host, port, protocol)
   }
-
-  given Conversion[Service, String] with
-    def apply(x: Service): String = x.baseUrl
-
 }

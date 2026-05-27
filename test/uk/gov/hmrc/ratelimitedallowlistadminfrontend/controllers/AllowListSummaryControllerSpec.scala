@@ -42,8 +42,8 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListReport, Fe
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
-  
+class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures {
+
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
   private val resources = List(
@@ -70,13 +70,24 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
   given messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   lazy val url = routes.AllowListSummaryController.onPageLoad(service, allowList)
-  
+
   override def beforeEach(): Unit =
     super.beforeEach()
     Mockito.reset(stubBehaviour)
 
-  "GET /" should:
-    "must display the page when the user is authorised and there are features for the service" in:
+  "GET /" should {
+    "redirect user to the onPageLoad endpoint" in {
+      val request = FakeRequest(routes.AllowListSummaryController.root(service, allowList))
+        .withSession("authToken" -> "Token some-token")
+
+      val result = route(app, request).value
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual url.url
+    }
+  }
+
+  "GET /manage" should {
+    "must display the page when the user is authorised and there are features for the service" in {
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
       when(mockConnector.getFeatureMetadata(any(), any())(using any())).thenReturn(Future.successful(Some(metadata)))
       when(mockConnector.getFeatureReport(any(), any())(using any())).thenReturn(Future.successful(Some(report)))
@@ -84,51 +95,47 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
       val result = route(app, request).value
-
-      status(result) mustBe OK
-
       val html = Jsoup.parse(contentAsString(result))
 
+      // return the correct status"
+      status(result) mustBe OK
+
+      // return 2 summary lists"
       val summaryListHtml: Elements = html.getElementsByClass("govuk-summary-list")
-      summaryListHtml.size() mustEqual 1
+      summaryListHtml.size() mustEqual 2
 
-      val rows = summaryListHtml.get(0).getElementsByClass("govuk-summary-list__row")
-      rows.size() mustEqual 4
+      // summary list 1 should display details on the user onboarding"
+      val userSummaryRows = html.getElementsByClass("govuk-summary-list").get(0).getElementsByClass("govuk-summary-list__row")
+      userSummaryRows.size() mustEqual 2
 
-      val currentUserRow = rows.get(0)
-      val tokenRow = rows.get(1)
-      val totalUsersRow = rows.get(2)
-      val statusRow = rows.get(3)
+      val currentUserRow = userSummaryRows.get(0)
+      val newUserRow = userSummaryRows.get(1)
 
-      // Current user count row
       currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(currentUserCount.toString)
       currentUserRow.getElementsByClass("govuk-summary-list__actions-list-item").size() mustEqual 0
 
-      // Token row
-      tokenRow.getElementsByClass("govuk-summary-list__value").text() must include(metadata.tokens.toString)
+      newUserRow.getElementsByClass("govuk-summary-list__value").text() must include(metadata.tokens.toString)
 
-      val tokenActions = tokenRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
-      tokenActions.size() mustEqual 1
+      val tokenActions = newUserRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
+      tokenActions.size() mustEqual 2
       tokenActions.get(0).text() must include("Increase")
+      tokenActions.get(1).text() must include("Set")
 
-      // Total row
-      totalUsersRow.getElementsByClass("govuk-summary-list__value").text() must include((currentUserCount + metadata.tokens).toString)
+      // summary list 1 should display details on allow list"
+      val allowListSummaryRows = html.getElementsByClass("govuk-summary-list").get(1).getElementsByClass("govuk-summary-list__row")
+      allowListSummaryRows.size() mustEqual 1
 
-//          val totalUsersActions = totalUsersRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
-//          totalUsersActions.size() mustEqual 1
-//          totalUsersActions.get(0).text() must include("Set user count")
+      val onboardingStatusRow = allowListSummaryRows.get(0)
 
-      // status row
       val expectedStatusText = if metadata.canIssueTokens then "Yes" else "No"
-      statusRow.getElementsByClass("govuk-summary-list__value").text() must include(expectedStatusText)
+      onboardingStatusRow.getElementsByClass("govuk-summary-list__value").text() must include(expectedStatusText)
 
-      val expectedStatusActionText = if metadata.canIssueTokens then "Pause" else "Resume"
-      val statusActions = statusRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
-        statusActions.size() mustEqual 1
-        statusActions.get(0).text() must include(expectedStatusActionText)
+      val statusActions = onboardingStatusRow.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
+      statusActions.size() mustEqual 1
+      statusActions.get(0).text() must include(metadata.expectedDisplayStatus())
+    }
 
-
-    "must display the page when the user is authorised and the feature is not found" in :
+    "must display the page when the user is authorised and the feature is not found" in {
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(None))
       when(mockConnector.getFeatureMetadata(any(), any())(using any())).thenReturn(Future.successful(None))
       when(mockConnector.getFeatureReport(any(), any())(using any())).thenReturn(Future.successful(None))
@@ -143,15 +150,25 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
 
       html.getElementsByClass("govuk-summary-list__row").size() mustEqual 0
       Option(html.getElementById("not-found")).value.text() must include(messages("rlal.allow_list_summary.not_found"))
+    }
 
 
-    "must fail when the user is not authenticated (no auth token)" in:
+    "must fail when the user is not authenticated (no auth token)" in {
       val request = FakeRequest(url)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+    }
 
-    "must fail when the user is not authorised" in:
+    "must fail when the user is not authorised" in {
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
       route(app, request).value.failed.futureValue
+    }
+  }
+}
+
+extension (metadata: FeatureSummary) {
+  def expectedDisplayStatus(): String = if metadata.canIssueTokens then "Pause" else "Resume"
+}
+

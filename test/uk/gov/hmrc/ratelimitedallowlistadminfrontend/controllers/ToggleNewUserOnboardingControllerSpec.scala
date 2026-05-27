@@ -105,7 +105,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("error.feature_not_found", service, feature)
+      flash(result).get("rlal-notification").value mustEqual messages("error.flash.feature_not_found", service, feature)
 
     "must fail when the user is not authenticated (no auth token)" in :
       val request = FakeRequest(onPageLoad)
@@ -134,7 +134,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("rlal.toggle.success.paused", feature)
+      flash(result).get("rlal-notification").value mustEqual messages("rlal.toggle.flash.success.paused", feature)
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
@@ -166,7 +166,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("error.feature_not_found", service, feature)
+      flash(result).get("rlal-notification").value mustEqual messages("error.flash.feature_not_found", service, feature)
 
     "fail when the user is not authenticated (no auth token)" in:
       val request = FakeRequest(onSubmit)

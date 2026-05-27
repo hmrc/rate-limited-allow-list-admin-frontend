@@ -22,7 +22,12 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListReport, FeatureSummary}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
 
-case class AllowListSummaryViewModel(service: String, feature: String, summaryList: SummaryList)
+case class AllowListSummaryViewModel(
+  service: String,
+  feature: String,
+  userSummary: SummaryList,
+  allowListSummary: SummaryList
+)
 
 object AllowListSummaryViewModel:
 
@@ -31,43 +36,43 @@ object AllowListSummaryViewModel:
       case FeatureSummary(service, feature, tokens, canIssueTokens) =>
         val (statusMsg, statusActionMsg) = if canIssueTokens then
           (
-            "rlal.service_summary.summary_list.onboardingStatus.value.Running",
-            "rlal.service_summary.summary_list.onboardingStatus.action.Running"
+            "rlal.allow_list_summary.allowList.onboardingStatus.value.Running",
+            "rlal.allow_list_summary.allowList.onboardingStatus.action.Running"
           )
         else
           (
-            "rlal.service_summary.summary_list.onboardingStatus.value.Paused",
-            "rlal.service_summary.summary_list.onboardingStatus.action.Paused"
+            "rlal.allow_list_summary.allowList.onboardingStatus.value.Paused",
+            "rlal.allow_list_summary.allowList.onboardingStatus.action.Paused"
           )
 
-        val vm = SummaryListViewModel(
+        val userSummary = SummaryListViewModel(
           List(
             SummaryListRowViewModel(
-              "rlal.service_summary.summary_list.currentUserCount.label",
+              "rlal.allow_list_summary.users.currentUserCount.label",
               ValueViewModel(report.currentUserCount.toString)
             ),
             SummaryListRowViewModel(
-              "rlal.service_summary.summary_list.newUserCount.label",
+              "rlal.allow_list_summary.users.newUserCount.label",
               ValueViewModel(tokens.toString),
               Seq(
                 ActionItemViewModel(
-                  "rlal.service_summary.summary_list.newUserCount.action",
+                  "rlal.allow_list_summary.users.newUserCount.action.incr",
                   routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
-                ).withVisuallyHiddenText(messages("rlal.service_summary.summary_list.newUserCount.action.visuallyHidden", feature))
+
+                ).withVisuallyHiddenText(messages("rlal.allow_list_summary.users.newUserCount.action.incr.visuallyHidden")),
+                ActionItemViewModel(
+                  "rlal.allow_list_summary.users.newUserCount.action.set",
+                  routes.SetNewUserLimitController.onPageLoad(service, feature).url
+                ).withVisuallyHiddenText(messages("rlal.allow_list_summary.users.newUserCount.action.set.visuallyHidden"))
               )
-            ),
+            )
+          )
+        )
+
+        val allListSummary = SummaryListViewModel(
+          List(
             SummaryListRowViewModel(
-              "rlal.service_summary.summary_list.totalUserCount.label",
-              ValueViewModel((report.currentUserCount + tokens).toString),
-              Seq(
-//                ActionItemViewModel(
-//                  "rlal.service_summary.summary_list.totalUserCount.action",
-//                  routes.SetNewUserLimitController.onPageLoad(service, feature).url
-//                ).withVisuallyHiddenText(messages("rlal.service_summary.summary_list.totalUserCount.action.visuallyHidden", feature))
-              )
-            ),
-            SummaryListRowViewModel(
-              "rlal.service_summary.summary_list.onboardingStatus.label",
+              "rlal.allow_list_summary.allowList.onboardingStatus.label",
               ValueViewModel(statusMsg),
               Seq(
                 ActionItemViewModel(
@@ -78,5 +83,6 @@ object AllowListSummaryViewModel:
             )
           )
         )
-        AllowListSummaryViewModel(report.service, feature, vm)
+
+        AllowListSummaryViewModel(report.service, feature, userSummary, allListSummary)
     }

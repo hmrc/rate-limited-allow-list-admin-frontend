@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.utils
 
 import org.scalacheck.Arbitrary.*
 import org.scalacheck.Gen.*

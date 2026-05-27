@@ -19,11 +19,10 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.Logging
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.PredicateBuilder
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.AllowListSummaryViewModel
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.AllowListSummaryView
 
@@ -33,22 +32,15 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class AllowListSummaryController @Inject()(
                                           mcc: MessagesControllerComponents,
-                                          auth: FrontendAuthComponents,
+                                          auth: Auth,
                                           connector: RateLimitedAllowListConnector,
                                           view: AllowListSummaryView
                                         )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  private def authorised(service: String) =
-    auth.authorizedAction(
-      continueUrl = routes.ServiceSummaryController.onPageLoad(service),
-      predicate = PredicateBuilder.forService(service).asAdmin,
-      retrieval = Retrieval.username
-    )
-
   def root(service: String, feature: String) = Action(Redirect(routes.AllowListSummaryController.onPageLoad(service, feature)))
     
   def onPageLoad(service: String, feature: String): Action[AnyContent] =
-    authorised(service).async {
+    auth.authorized.admin.service(service).async {
       request =>
         given Request[?] = request
 

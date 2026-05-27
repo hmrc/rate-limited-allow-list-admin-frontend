@@ -115,7 +115,7 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("rlal.increase.success", feature)
+      flash(result).get("rlal-notification").value mustEqual messages("rlal.increase.flash.success", feature)
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))

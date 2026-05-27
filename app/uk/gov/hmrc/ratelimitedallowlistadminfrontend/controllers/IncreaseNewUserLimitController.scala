@@ -20,11 +20,10 @@ import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Retrieval}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.util.PredicateBuilder
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IncreaseNewUserLimitView
 
 import javax.inject.{Inject, Singleton}
@@ -34,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class IncreaseNewUserLimitController @Inject()(
   mcc: MessagesControllerComponents,
-  auth: FrontendAuthComponents,
+  auth: Auth,
   connector: RateLimitedAllowListConnector,
   formProvider: IntFormProvider,
   view: IncreaseNewUserLimitView
@@ -42,21 +41,14 @@ class IncreaseNewUserLimitController @Inject()(
 
   private def form: Form[Int] = formProvider()
 
-  private def authorised(service: String) =
-    auth.authorizedAction(
-      continueUrl = routes.ServiceSummaryController.onPageLoad(service),
-      predicate = PredicateBuilder.forService(service).asAdmin,
-      retrieval = Retrieval.username
-    )
-
   def onPageLoad(service: String, feature: String): Action[AnyContent] =
-    authorised(service):
+    auth.authorized.admin.service(service):
       request =>
         given Request[?] = request
         Ok(view(form, service, feature))
 
   def onSubmit(service: String, feature: String): Action[AnyContent] =
-    authorised(service).async:
+    auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         form.bindFromRequest().fold(
@@ -65,6 +57,6 @@ class IncreaseNewUserLimitController @Inject()(
           },
           userIncrement => connector.addTokens(service, feature, userIncrement).map(
             _ => Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
-              .flashing("rlal-notification" -> summon[Messages]("rlal.increase.success", feature))
+              .flashing("rlal-notification" -> summon[Messages]("rlal.increase.flash.success", feature))
           )
         )

@@ -29,9 +29,8 @@
   @govukBreadcrumbs(
     crumb.home >
       crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
-      crumb.page("rlal.allow_list_summary.breadcrumb", service)(routes.AllowListSummaryController.onPageLoad(service, feature)) >
       crumb.page("rlal.allow_list_summary.breadcrumb", feature)(routes.AllowListSummaryController.onPageLoad(service, feature)) >
-      crumb.current("rlal.increase.breadcrumb")
+      crumb.current("rlal.set_new.breadcrumb")
   )
 }
 
@@ -40,7 +39,7 @@
     @formHelper(action = routes.SetNewUserLimitController.onSubmit(service, feature), Symbol("autocomplete") -> "off") {
         <fieldset class="govuk-fieldset">
 
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l govuk-!-margin-0">
                 <span class="govuk-caption-l">@service</span>
                 <h1 class="govuk-heading-l">@messages("rlal.set_new.heading")</h1>
             </legend>
@@ -49,9 +48,51 @@
                 @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
             }
 
+            <div class="govuk-inset-text govuk-!-margin-top-0">
+                <div>
+                    <div class="govuk-heading-m">@messages("rlal.set_new.guidance.heading") </div>
+                </div>
+
+                <div>
+                    <div class="govuk-heading-s govuk-!-margin-bottom-1">Before</div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.currentUserCount.label")</span>
+                        <span>@messages("rlal.set_new.guidance.before.sep")</span>
+                        <span>90.</span>
+                    </div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.newUserCount.label")</span>
+                        <span>@messages("rlal.set_new.guidance.before.sep")</span>
+                        <span>10.</span>
+                    </div>
+                </div>
+
+                <div class="govuk-!-margin-top-4">
+                    <div class="govuk-heading-s govuk-!-margin-bottom-1">Change</div>
+                    <div>@messages("rlal.set_new.guidance.change")</div>
+                </div>
+
+                <div class="govuk-!-margin-top-4">
+                    <div class="govuk-heading-s govuk-!-margin-bottom-1">After</div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.currentUserCount.label")</span>
+                        <span>@messages("rlal.set_new.guidance.after.sep")</span>
+                        <span>90.</span>
+                    </div>
+                    <div>
+                        <span>@messages("rlal.allow_list_summary.users.newUserCount.label")</span>
+                        <span>@messages("rlal.set_new.guidance.after.sep")</span>
+                        <span>25.</span>
+                    </div>
+                </div>
+            </div>
+
             @govukInput(
                 Input(
-                    label = Label(content = Text(messages("rlal.set_new.values.label"))),
+                    label = Label(
+                        classes = "govuk-label--m",
+                        content = Text(messages("rlal.set_new.values.label"))
+                    ),
                     hint = Some(Hint(content = Text(messages("rlal.set_new.values.hint"))))
                 ).withFormField(form("value"))
             )

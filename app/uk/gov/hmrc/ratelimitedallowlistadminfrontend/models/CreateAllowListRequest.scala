@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
+import play.api.libs.json.{Json, OFormat}
 
-import play.api.data.Form
-import play.api.data.Forms.mapping
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
+final case class CreateAllowListRequest(allowList: String)
 
-class BooleanFormProvider extends Mappings {
-
-  def apply(): Form[Boolean] = Form(
-    mapping(
-      "value" -> boolean(),
-    )(identity)(Some.apply)
-  )
-}
+object CreateAllowListRequest:
+  given OFormat[CreateAllowListRequest] = Json.format

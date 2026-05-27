@@ -3,19 +3,30 @@ service.text = This is your new service
 
 site.success = Success
 site.submit = Submit
+site.error = Error
 
 error.required = Enter a value
 error.wholeNumber = Enter a whole number
 error.nonNumeric = Enter a number value
 error.nonNegative = Enter a positive whole number
 error.boolean = Enter a boolean value
+error.string.length = The {0} must be {1} characters or less
 
-error.feature_not_found = Feature {1} not found for service {0}
+error.flash.feature_not_found = Feature {1} not found for service {0}
+error.flash.retrievals_empty = There was an error fetching the services that you can manage. If you need support reach out to the team that owns this service which can be found in Catalogue.
 
 rlal.index.title = Administer rate limited allow lists
 rlal.index.heading = Administer rate limited allow lists
 rlal.index.breadcrumb = Home
-rlal.index.p = Which service you would like to manage the allow lists?
+rlal.index.active.h2 = Services with allow lists
+rlal.index.active.p = Which service you would like to manage?
+rlal.index.active.empty = There are no services with allow lists for you to view or manage.
+rlal.index.task.h2 = Actions
+rlal.index.tasks.create = Create a new allow list
+
+rlal.selectcreate.title = Select the service for the new allow list
+rlal.selectcreate.heading = Select the service for the new allow list
+rlal.selectcreate.breadcrumb = Select service
 
 rlal.service_summary.title = Allow lists for {0}
 rlal.service_summary.heading = Allow lists for {0}
@@ -25,38 +36,53 @@ rlal.service_summary.allow_list_running_empty = There are no running allow lists
 rlal.service_summary.paused.h2 = Paused allow lists
 rlal.service_summary.allow_list_paused_empty = There are no paused allow lists.
 
-rlal.service_summary.summary_list.currentUserCount.label = Current user count
-rlal.service_summary.summary_list.newUserCount.label = New user count
-rlal.service_summary.summary_list.newUserCount.action = Increase
-rlal.service_summary.summary_list.newUserCount.action.visuallyHidden = Increase the number of new users to onboard for {0}
-rlal.service_summary.summary_list.totalUserCount.label = Total user count
-rlal.service_summary.summary_list.totalUserCount.action = Set user count
-rlal.service_summary.summary_list.totalUserCount.action.visuallyHidden = Set the total number of number of users for this feature onboard
-rlal.service_summary.summary_list.onboardingStatus.label = Allow list enabled
-rlal.service_summary.summary_list.onboardingStatus.value.Paused = No
-rlal.service_summary.summary_list.onboardingStatus.value.Running = Yes
-rlal.service_summary.summary_list.onboardingStatus.action.Paused = Resume
-rlal.service_summary.summary_list.onboardingStatus.action.Running = Pause
-rlal.service_summary.no_features = There are no features setup for this service.
 
-rlal.allow_list_summary.title = Manage {0}
-rlal.allow_list_summary.heading = Manage {0}
+rlal.allow_list_summary.title = View and manage {0}
+rlal.allow_list_summary.heading = View and manage {0}
+rlal.allow_list_summary.users.heading = User onboarding summary
+rlal.allow_list_summary.users.currentUserCount.label = Onboarded users
+rlal.allow_list_summary.users.newUserCount.label = New user onboarding limit
+rlal.allow_list_summary.users.newUserCount.action.incr = Increase
+rlal.allow_list_summary.users.newUserCount.action.incr.visuallyHidden = Increase the number of new users to onboard for this allow list
+rlal.allow_list_summary.users.newUserCount.action.set = Set
+rlal.allow_list_summary.users.newUserCount.action.set.visuallyHidden = Set the total number of number of new users to onboard for this allow list
+rlal.allow_list_summary.allowList.heading = Allow list settings summary
+rlal.allow_list_summary.allowList.onboardingStatus.label = New user onboarding enabled
+rlal.allow_list_summary.allowList.onboardingStatus.value.Paused = No
+rlal.allow_list_summary.allowList.onboardingStatus.value.Running = Yes
+rlal.allow_list_summary.allowList.onboardingStatus.action.Paused = Resume
+rlal.allow_list_summary.allowList.onboardingStatus.action.Running = Pause
+
 rlal.allow_list_summary.breadcrumb = {0}
 rlal.allow_list_summary.not_found = The allow list you are searching for cannot be found.
 
 rlal.increase.title = Increase the number of new users to onboard
 rlal.increase.heading = Increase the number of new users to onboard
 rlal.increase.breadcrumb = Increase users
-rlal.increase.values.label = Increment value
-rlal.increase.values.hint = Enter a positive whole number to increment the number of new users to be onboarded
-rlal.increase.success = Successfully increased the number of new users to onboard to {0}
+rlal.increase.guidance.heading = For example
+rlal.increase.guidance.before.sep = is
+rlal.increase.guidance.change = New user onboarding limit increased by 5.
+rlal.increase.guidance.after.sep = will be
+rlal.increase.values.label = How many more users should be onboarded?
+rlal.increase.values.hint = Enter a positive whole number
+rlal.increase.flash.success = Successfully increased the number of new users to onboard to {0}
+
+rlal.create_allow_list.title = What is the name of the new allow list?
+rlal.create_allow_list.heading = What is the name of the new allow list?
+rlal.create_allow_list.breadcrumb = Create allow list
+rlal.create_allow_list.values.hint = Enter alpha-numeric characters a-z, A-Z, 0-9, and hyphens.
+rlal.create_allow_list.flash.success = Successfully created allow list {1} for service {0}
 
 rlal.set_new.title = Set the number of new users to onboard
 rlal.set_new.heading = Set the number of new users to onboard
 rlal.set_new.breadcrumb = Set new users
+rlal.set_new.guidance.heading = For example
+rlal.set_new.guidance.before.sep = is
+rlal.set_new.guidance.change = New user onboarding limit set to 25.
+rlal.set_new.guidance.after.sep = will be
 rlal.set_new.values.label = Total number of new users
-rlal.set_new.values.hint = Enter a positive whole number for the number of new users that should be onboarded. Set to 0 to stop onboarding.
-rlal.set_new.success = Successfully set the number of new users to onboard to {0}
+rlal.set_new.values.hint = Enter a positive whole number
+rlal.set_new.flash.success = Successfully set the number of new users to onboard to {0}
 
 rlal.toggle.title.on = Pause onboarding new users
 rlal.toggle.title.off = Resume onboarding of new users
@@ -69,5 +95,5 @@ rlal.toggle.values.hint.on = You can pause the onboarding below.
 rlal.toggle.values.hint.off = You can resume the onboarding below.
 rlal.toggle.button.on = Pause
 rlal.toggle.button.off = Resume
-rlal.toggle.success.paused = Successfully paused onboarding new users to {0} 
-rlal.toggle.success.resumed = Successfully resumed onboarding new users to {0}
+rlal.toggle.flash.success.paused = Successfully paused onboarding new users to {0} 
+rlal.toggle.flash.success.resumed = Successfully resumed onboarding new users to {0}

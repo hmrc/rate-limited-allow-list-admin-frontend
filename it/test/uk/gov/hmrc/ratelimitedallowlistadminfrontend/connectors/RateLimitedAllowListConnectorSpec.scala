@@ -23,7 +23,7 @@ import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.http.Status.{INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
+import play.api.http.Status.{CREATED, INTERNAL_SERVER_ERROR, NO_CONTENT, OK}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
@@ -44,8 +44,75 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
   private lazy val connector = app.injector.instanceOf[RateLimitedAllowListConnector]
   private lazy val server = wireMockServer
 
+  ".getServices" - {
+    val url = "/rate-limited-allow-list/services"
+    val hc = HeaderCarrier()
+
+    "must return the metadata for all the service's features when the server responds with OK" in {
+      val validResponse = List("service-1", "service-2", "service-3")
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(
+            aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse)))
+          )
+      )
+
+      val result = connector.getServices()(using hc).futureValue
+      result mustEqual validResponse
+    }
+
+    "must fail when the server responds with anything else" in {
+
+      server.stubFor(
+        get(urlMatching(url))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
+      )
+
+      connector.getServices()(using hc).failed.futureValue
+    }
+  }
+
+  ".createAllowList" - {
+
+    val url = "/rate-limited-allow-list/services/service/allow-lists"
+    val hc = HeaderCarrier()
+    val request = CreateAllowListRequest("allow-list-name")
+
+    "must return the number of tokens when the server responds with OK" in {
+
+      server.stubFor(
+        post(urlMatching(url))
+          .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
+          .willReturn(aResponse().withStatus(CREATED))
+      )
+
+      connector.createAllowList("service", request.allowList)(using hc).futureValue
+    }
+
+    "must fail when the server responds with anything else" in {
+      server.stubFor(
+        post(urlMatching(url))
+          .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
+          .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
+      )
+
+      connector.createAllowList("service", request.allowList)(using hc).failed.futureValue
+    }
+
+    "must fail when the server connection fails" in {
+      server.stubFor(
+        post(urlMatching(url))
+          .withRequestBody(equalToJson(Json.stringify(Json.toJson(request))))
+          .willReturn(aResponse().withFault(Fault.RANDOM_DATA_THEN_CLOSE))
+      )
+
+      connector.createAllowList("service", request.allowList)(using hc).failed.futureValue
+    }
+  }
+
+
   ".getFeatures" - {
-    
     val url = "/rate-limited-allow-list/services/service/features"
     val hc = HeaderCarrier()
 

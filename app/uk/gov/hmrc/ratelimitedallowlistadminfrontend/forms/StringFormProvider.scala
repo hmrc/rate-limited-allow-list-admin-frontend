@@ -16,16 +16,21 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
 
-
 import play.api.data.Form
-import play.api.data.Forms.mapping
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
 
-class BooleanFormProvider extends Mappings {
+class StringFormProvider extends Mappings {
 
-  def apply(): Form[Boolean] = Form(
-    mapping(
-      "value" -> boolean(),
-    )(identity)(Some.apply)
+  def apply(fieldName: String, maxStrLen: Int): Form[String] =
+    Form(
+      "value" -> text()
+        .verifying(maxLength(maxStrLen, "error.string.length", fieldName, maxStrLen))
   )
+  
+  def apply(fieldName: String, maxStrLen: Int, regex: String, regexErrorMessage: String): Form[String] =
+    Form(
+      "value" -> text()
+        .verifying(maxLength(maxStrLen, "error.string.length", fieldName, maxStrLen))
+        .verifying(regexp(regex, regexErrorMessage))
+    )
 }

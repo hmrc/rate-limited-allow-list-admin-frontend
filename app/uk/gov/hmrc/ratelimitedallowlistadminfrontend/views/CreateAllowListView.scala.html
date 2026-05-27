@@ -1,0 +1,54 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+    layout: Layout,
+    formHelper: FormWithCSRF,
+    govukInput: GovukInput,
+    govukButton: GovukButton,
+    govukErrorSummary: GovukErrorSummary,
+    govukBreadcrumbs: GovukBreadcrumbs
+)
+
+@(form: Form[_], service: String)(implicit request: Request[_], messages: Messages)
+
+@breadcrumbs = {
+  @govukBreadcrumbs(
+    crumb.home >
+      crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
+      crumb.page("rlal.selectcreate.breadcrumb")(routes.SelectCreateAllowListController.onPageLoad()) >
+      crumb.current("rlal.create_allow_list.breadcrumb")
+  )
+}
+
+@layout(pageTitle = Some(messages("rlal.create_allow_list.title")), beforeContent = Some(breadcrumbs)) {
+
+    @formHelper(action = routes.CreateAllowListController.onSubmit(service), Symbol("autocomplete") -> "off") {
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
+        }
+        <span class="govuk-caption-l">@service</span>
+        @govukInput(
+            Input(
+                classes = "govuk-!-width-full",
+                label = Label(content = Text(messages("rlal.create_allow_list.heading")), isPageHeading = true, classes = "govuk-label--l"),
+                hint = Some(Hint(content = Text(messages("rlal.create_allow_list.values.hint"))))
+            ).withFormField(form("value"))
+        )
+
+        @govukButton(Button(content = Text(messages("site.submit"))))
+    }
+}

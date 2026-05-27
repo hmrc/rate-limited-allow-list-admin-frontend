@@ -17,6 +17,8 @@ It is used in combination with [rate-limited-allow-list](https://github.com/hmrc
 
 Access to the service is via the `admin-frontend-proxy`, using the URL route `/administer-rate-limited-allow-list` after the admin URL the desired environment. You will be required to login using LDAP as this identifies which services you can setup and manage allow lists for.
 
+For security and traceability purposes, any changes to an identifier list are audited including who made those changes.
+
 ### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
