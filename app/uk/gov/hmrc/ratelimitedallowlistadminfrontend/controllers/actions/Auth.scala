@@ -42,6 +42,12 @@ class Auth @Inject() (
           continueUrl = index,
           retrieval = Retrieval.locations(resourceType = Some(resourceType), action = Some(IAAction("ADMIN")))
         )
+        
+      def all(): AuthenticatedActionBuilder[Set[Resource], AnyContent] =
+        authComponents.authenticatedAction(
+          continueUrl = index,
+          retrieval = Retrieval.locations(resourceType = Some(resourceType))
+        )
     }
   }
 

@@ -27,10 +27,15 @@ rlal.index.active.p = Which service you would like to manage?
 rlal.index.active.empty = There are no services with allow lists for you to view or manage.
 rlal.index.task.h2 = Actions
 rlal.index.tasks.create = Create a new allow list
+rlal.index.tasks.view = Find and view an existing allow list
 
 rlal.selectcreate.title = Select the service for the new allow list
 rlal.selectcreate.heading = Select the service for the new allow list
 rlal.selectcreate.breadcrumb = Select service
+
+rlal.selectview.title = Which service does the allow list belong to?
+rlal.selectview.heading = Which service does the allow list belong to?
+rlal.selectview.breadcrumb = Select service
 
 rlal.service_summary.title = Allow lists for {0}
 rlal.service_summary.heading = Allow lists for {0}

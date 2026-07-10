@@ -5,8 +5,11 @@ GET        /assets/*file            controllers.Assets.versioned(path = "/public
 
 GET   /                                                         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.onPageLoad()
 
-GET   /services/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onPageLoad()
-POST  /services/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onSubmit()
+GET   /services/create/select-a-service                         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onPageLoad()
+POST  /services/create/select-a-service                         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onSubmit()
+
+GET   /services/view/select-a-service                           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onPageLoad()
+POST  /services/view/select-a-service                           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onSubmit()
 
 GET   /services/:service/allow-lists                            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onPageLoad(service)
 POST  /services/:service/allow-lists                            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onSubmit(service)
