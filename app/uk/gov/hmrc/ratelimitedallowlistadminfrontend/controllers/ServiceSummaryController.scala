@@ -37,7 +37,7 @@ class ServiceSummaryController @Inject()(
                                         )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
  
   def onPageLoad(service: String): Action[AnyContent] =
-    auth.authorized.admin.service(service).async {
+    auth.authorized.service(service).async {
       request =>
         given Request[?] = request
         for

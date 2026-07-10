@@ -14,7 +14,8 @@ POST  /services/:service/allow-lists                            uk.gov.hmrc.rate
 GET   /services/:service                                        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ServiceSummaryController.onPageLoad(service)
 
 GET   /services/:service/allow-lists/:allowList                 uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList)
-GET   /services/:service/allow-lists/:allowList/manage          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.onPageLoad(service, allowList)
+GET   /services/:service/allow-lists/:allowList/manage          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.manage(service, allowList)
+GET   /services/:service/allow-lists/:allowList/view            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.view(service, allowList)
 
 GET   /services/:service/features/:feature/manage/toggle        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onPageLoad(service: String, feature: String)
 POST  /services/:service/features/:feature/manage/toggle        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onSubmit(service: String, feature: String)

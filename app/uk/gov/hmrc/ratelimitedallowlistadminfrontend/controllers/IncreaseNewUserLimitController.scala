@@ -56,7 +56,7 @@ class IncreaseNewUserLimitController @Inject()(
             Future.successful(BadRequest(view(formWithErrors, service, feature)))
           },
           userIncrement => connector.addTokens(service, feature, userIncrement).map(
-            _ => Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
+            _ => Redirect(routes.AllowListSummaryController.root(service, feature))
               .flashing("rlal-notification" -> summon[Messages]("rlal.increase.flash.success", feature))
           )
         )

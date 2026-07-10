@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.behaviours
 
-import org.scalatest.{Assertion, OptionValues, TestSuite}
+import org.scalatest.{Assertion, OptionValues}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import play.api.data.{Form, FormError}
@@ -29,7 +29,7 @@ trait FormSpec extends AnyFreeSpec, Matchers, OptionValues {
         for (error <- expectedErrors) formWithErrors.errors must contain(FormError(error.key, error.message, error.args))
         formWithErrors.errors.size mustBe expectedErrors.size
       },
-      form => {
+      _ => {
         fail("Expected a validation error when binding the form, but it was bound successfully.")
       }
     )

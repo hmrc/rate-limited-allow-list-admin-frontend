@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.AllowListSummaryViewModel
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.AllowListSummaryView
 
@@ -31,16 +32,29 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class AllowListSummaryController @Inject()(
-                                          mcc: MessagesControllerComponents,
-                                          auth: Auth,
-                                          connector: RateLimitedAllowListConnector,
-                                          view: AllowListSummaryView
-                                        )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
+  mcc: MessagesControllerComponents,
+  auth: Auth,
+  connector: RateLimitedAllowListConnector,
+  view: AllowListSummaryView
+)(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging {
 
-  def root(service: String, feature: String) = Action(Redirect(routes.AllowListSummaryController.onPageLoad(service, feature)))
-    
-  def onPageLoad(service: String, feature: String): Action[AnyContent] =
-    auth.authorized.admin.service(service).async {
+  def root(service: String, feature: String): Action[AnyContent] =
+    auth.authorized.service(service) {
+      r =>
+        r.userMode match {
+          case UserMode.Admin => Redirect(routes.AllowListSummaryController.manage(service, feature)).flashing(r.flash)
+          case UserMode.ReadOnly => Redirect(routes.AllowListSummaryController.view(service, feature))
+        }
+    }
+
+  def view(service: String, feature: String): Action[AnyContent] =
+    onPageLoad(service, feature)
+
+  def manage(service: String, feature: String): Action[AnyContent] =
+    onPageLoad(service, feature)
+
+  private def onPageLoad(service: String, feature: String): Action[AnyContent] =
+    auth.authorized.service(service).async {
       request =>
         given Request[?] = request
 
@@ -53,12 +67,14 @@ class AllowListSummaryController @Inject()(
         yield
           (metadataOpt, reportOpt) match
             case (Some(metadata), Some(report)) =>
-              val vm = AllowListSummaryViewModel(metadata, report)
+              val vm = AllowListSummaryViewModel(metadata, report, request.userMode)
               Ok(view(service, feature, Some(vm)))
+
             case (mOpt, rOpt) =>
               logger.error(s"For service $service and feature $feature, metadata was ${mOpt.showStatus} and report was ${rOpt.showStatus}")
               Ok(view(service, feature, None))
     }
+}
 
 extension (opt: Option[?])
   def showStatus: String = opt.fold("undefined")(_ => "defined")
