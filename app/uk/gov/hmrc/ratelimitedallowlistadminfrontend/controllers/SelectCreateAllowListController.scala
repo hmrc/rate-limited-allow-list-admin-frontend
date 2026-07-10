@@ -69,21 +69,3 @@ class SelectCreateAllowListController @Inject()(
       )
     }
     
-
-object SelectCreateAllowListController {
-  extension (resources: Set[Resource])
-    def containsResource(name: String): Boolean = resources.exists(_.resourceLocation.value == name)
-
-    def toSelectVM(using Messages): Select = {
-      val items =
-        resources.toList.sortBy(_.resourceLocation.value)
-          .map(resource => SelectItem(text = resource.resourceLocation.value))
-
-      Select(
-        name = "value",
-        items = SelectItem(text = "", selected = true, disabled = true) +: items
-      ).asAccessibleAutocomplete(Some(
-        AccessibleAutocomplete(showAllValues = true)
-      ))
-    }
-}
