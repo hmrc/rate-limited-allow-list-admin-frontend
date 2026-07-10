@@ -21,7 +21,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{Auth, RequireRetrievals}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AuthActions, RequireRetrievals}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SelectCreateAllowListView
 
@@ -32,7 +32,7 @@ import scala.concurrent.Future
 @Singleton
 class SelectCreateAllowListController @Inject()(
                                                  mcc: MessagesControllerComponents,
-                                                 auth: Auth,
+                                                 auth: AuthActions,
                                                  formProvider: StringFormProvider,
                                                  requireRetrievals: RequireRetrievals,
                                                  view: SelectCreateAllowListView

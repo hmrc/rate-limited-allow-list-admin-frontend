@@ -23,7 +23,7 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 
 import javax.inject.Inject
 
-class Auth @Inject() (
+class AuthActions @Inject()(
   authComponents: FrontendAuthComponents,
   userModeTransformer: UserModeTransformer,
   adminUserFilter: AdminUserFilter
