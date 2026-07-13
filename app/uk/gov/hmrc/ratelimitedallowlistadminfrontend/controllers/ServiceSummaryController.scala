@@ -21,7 +21,7 @@ import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.ServiceSummaryViewModel
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ServiceSummaryView
 
@@ -31,13 +31,13 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class ServiceSummaryController @Inject()(
                                           mcc: MessagesControllerComponents,
-                                          auth: Auth,
+                                          auth: AuthActions,
                                           connector: RateLimitedAllowListConnector,
                                           view: ServiceSummaryView
                                         )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
  
   def onPageLoad(service: String): Action[AnyContent] =
-    auth.authorized.admin.service(service).async {
+    auth.authorized.service(service).async {
       request =>
         given Request[?] = request
         for

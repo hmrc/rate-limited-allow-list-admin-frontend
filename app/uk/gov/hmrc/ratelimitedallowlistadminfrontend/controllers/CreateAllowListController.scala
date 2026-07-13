@@ -21,7 +21,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.CreateAllowListView
@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class CreateAllowListController @Inject()(
   mcc: MessagesControllerComponents,
-  auth: Auth,
+  auth: AuthActions,
   connector: RateLimitedAllowListConnector,
   formProvider: StringFormProvider,
   view: CreateAllowListView
@@ -56,7 +56,7 @@ class CreateAllowListController @Inject()(
             Future.successful(BadRequest(view(formWithErrors, service)))
           },
           feature => connector.createAllowList(service, feature).map(
-            _ => Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
+            _ => Redirect(routes.AllowListSummaryController.root(service, feature))
               .flashing("rlal-notification" -> summon[Messages]("rlal.create_allow_list.flash.success", service, feature))
           )
         )

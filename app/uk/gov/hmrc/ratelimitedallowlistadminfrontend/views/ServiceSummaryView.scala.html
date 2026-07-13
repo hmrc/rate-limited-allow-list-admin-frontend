@@ -35,7 +35,7 @@
             @vm.running.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@routes.AllowListSummaryController.onPageLoad(service, allowListName)"
+                       href="@routes.AllowListSummaryController.root(service, allowListName)"
                     >@allowListName</a>
                 </li>
             }
@@ -51,7 +51,7 @@
             @vm.paused.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@routes.AllowListSummaryController.onPageLoad(service, allowListName)"
+                       href="@routes.AllowListSummaryController.root(service, allowListName)"
                     >@allowListName</a>
                 </li>
             }

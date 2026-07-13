@@ -27,13 +27,13 @@ import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.i18n.MessagesApi
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{Done, FeatureSummary}
@@ -46,10 +46,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
-  private val resources = List(
-    Resource.from("rate-limited-allow-list-admin-frontend", "bar"),
-    Resource.from("rate-limited-allow-list-admin-frontend", "foo")
-  )
+  private val retrievalResult = true
 
   private val service = "fake-frontend"
   private val feature = "fake-feature"
@@ -69,6 +66,8 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
         bind[RateLimitedAllowListConnector].toInstance(mockConnector)
       )
       .build()
+    
+  def messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   override def beforeEach(): Unit =
     super.beforeEach()
@@ -77,7 +76,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
   "GET" should :
 
     "return OK and the correct view for a GET" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
       when(mockConnector.getFeatureMetadata(any(), any())(using any()))
         .thenReturn(Future.successful(Some(featureSummary)))
 
@@ -94,7 +93,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       form.attributes().get("action") mustEqual onSubmit.url
 
     "redirect the user and with flash error to when there is not data" in :
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
       when(mockConnector.getFeatureMetadata(any(), any())(using any()))
         .thenReturn(Future.successful(None))
 
@@ -102,18 +101,32 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("error.flash.feature_not_found", service, feature)
 
+    "must show the user an unauthorized screen when they are authenticated but do not have access" in :
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
+
+      val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
+      val result = route(app, request).value
+
+      status(result) mustBe UNAUTHORIZED
+      val html = Jsoup.parse(contentAsString(result))
+
+      val h1 = html.getElementsByTag("h1")
+      h1.size() mustEqual 1
+      h1.text() must include(messages("rlal.unauthorised.heading"))
+      
     "must fail when the user is not authenticated (no auth token)" in :
       val request = FakeRequest(onPageLoad)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "must fail when the user is not authorised" in :
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.failed(new RuntimeException()))
       val request = FakeRequest(onPageLoad)
         .withSession("authToken" -> "Token some-token")
 
@@ -121,7 +134,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
   "POST" should:
     "redirect with flash success when the value is valid and submission is successful" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
       when(mockConnector.setCanIssueTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
 
       val request = FakeRequest(POST, onSubmit.url)
@@ -131,13 +144,13 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.toggle.flash.success.paused", feature)
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
       when(mockConnector.getFeatureMetadata(any(), any())(using any()))
         .thenReturn(Future.successful(Some(featureSummary)))
 
@@ -153,7 +166,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       html.getElementsByTag("form").size() mustEqual 1
 
     "redirect the user on when there is an error with the form and and with flash error to when there is not data" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
       when(mockConnector.getFeatureMetadata(any(), any())(using any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(onSubmit)
@@ -163,16 +176,33 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("error.flash.feature_not_found", service, feature)
+
+    "must show the user an unauthorized screen when they are authenticated but do not have access" in :
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
+
+      val request = FakeRequest(onSubmit)
+        .withSession("authToken" -> "Token some-token")
+        .withFormUrlEncodedBody("value" -> "false")
+
+      val result = route(app, request).value
+
+      status(result) mustBe UNAUTHORIZED
+      val html = Jsoup.parse(contentAsString(result))
+
+      val h1 = html.getElementsByTag("h1")
+      h1.size() mustEqual 1
+      h1.text() must include(messages("rlal.unauthorised.heading"))
 
     "fail when the user is not authenticated (no auth token)" in:
       val request = FakeRequest(onSubmit)
         .withFormUrlEncodedBody("value" -> "false")
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "fail when the user is not authorised" in:
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))

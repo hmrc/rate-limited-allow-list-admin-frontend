@@ -30,7 +30,7 @@ import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.mvc.Call
+import play.api.mvc.{Call, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
@@ -46,11 +46,6 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
-  private val resources = List(
-    Resource.from("rate-limited-allow-list-admin-frontend", "bar"),
-    Resource.from("rate-limited-allow-list-admin-frontend", "foo")
-  )
-
   val service = "fake-frontend"
   val feature1 = "feature 1"
   val feature2 = "feature 2"
@@ -78,33 +73,36 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
   private def url: Call = routes.ServiceSummaryController.onPageLoad(service)
 
   "GET /" should {
-    "must display the page when the user is authorised and there are allow lists for the service" in {
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary2, summary1)))
+    "must display the page" when {
+      "user is an authorised admin and there are allow lists for the service" in {
+        when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
+        when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary2, summary1)))
 
-      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
+        val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
-      val result = route(app, request).value
+        val result = route(app, request).value
 
-      status(result) mustBe OK
+        status(result) mustBe OK
 
-      val html = Jsoup.parse(contentAsString(result))
+        behave like controllerThatRendersServiceSummaryView(result)
+      }
 
-      val runningSection = Option(html.getElementById("allow-lists-running")).value
-      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+      "user is authorised but not an admin, and there are allow lists for the service" in {
+        when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(false))
+        when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary2, summary1)))
 
-      val runningAllowListsList = runningSection.getElementsByTag("li")
-      runningAllowListsList.size() mustEqual 2
-      runningAllowListsList.get(0).text() must include(feature1)
-      runningAllowListsList.get(1).text() must include(feature3)
+        val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
-      val pausedAllowListsList = pausedSection.getElementsByTag("li")
-      pausedAllowListsList.size() mustEqual 1
-      pausedAllowListsList.get(0).text() must include(feature2)
+        val result = route(app, request).value
+
+        status(result) mustBe OK
+
+        behave like controllerThatRendersServiceSummaryView(result)
+      }
     }
 
     "must display the page when the user is authorised and all allow lists are running" in {
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
       when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary1)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
@@ -131,7 +129,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     }
 
     "must display the page when the user is authorised and all allow lists are paused" in {
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
       when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary2)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
@@ -157,7 +155,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     }
 
     "must display the page when the user is authorised and there are no allow lists for the service" in {
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
       when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List.empty))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
@@ -183,6 +181,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
       val request = FakeRequest(url)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
     }
 
     "must fail when the user is not authorised" in {
@@ -192,4 +191,20 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
       route(app, request).value.failed.futureValue
     }
+  }
+
+  private def controllerThatRendersServiceSummaryView(result: Future[Result]) = {
+    val html = Jsoup.parse(contentAsString(result))
+
+    val runningSection = Option(html.getElementById("allow-lists-running")).value
+    val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+
+    val runningAllowListsList = runningSection.getElementsByTag("li")
+    runningAllowListsList.size() mustEqual 2
+    runningAllowListsList.get(0).text() must include(feature1)
+    runningAllowListsList.get(1).text() must include(feature3)
+
+    val pausedAllowListsList = pausedSection.getElementsByTag("li")
+    pausedAllowListsList.size() mustEqual 1
+    pausedAllowListsList.get(0).text() must include(feature2)
   }

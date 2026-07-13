@@ -21,7 +21,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.BooleanFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ToggleNewUserOnboardingView
 
@@ -32,7 +32,7 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class ToggleNewUserOnboardingController @Inject()(
   mcc: MessagesControllerComponents,
-  auth: Auth,
+  auth: AuthActions,
   connector: RateLimitedAllowListConnector,
   formProvider: BooleanFormProvider,
   view: ToggleNewUserOnboardingView
@@ -48,7 +48,7 @@ class ToggleNewUserOnboardingController @Inject()(
             case Some(metadata) =>
               Ok(view(formProvider().fill(!metadata.canIssueTokens), metadata))
             case None =>
-              Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
+              Redirect(routes.AllowListSummaryController.root(service, feature))
                 .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
 
 
@@ -62,14 +62,14 @@ class ToggleNewUserOnboardingController @Inject()(
               case Some(metadata) =>
                 BadRequest(view(formWithErrors.fill(!metadata.canIssueTokens), metadata))
               case None =>
-                Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
+                Redirect(routes.AllowListSummaryController.root(service, feature))
                 .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
             }
           },
           bool => connector.setCanIssueTokens(service, feature, bool).map(
             _ =>
               val successMessageKey = if bool then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
-              Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
+              Redirect(routes.AllowListSummaryController.root(service, feature))
                 .flashing("rlal-notification" -> summon[Messages](successMessageKey, feature))
           )
         )

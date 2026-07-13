@@ -29,7 +29,7 @@
   @govukBreadcrumbs(
     crumb.home >
       crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
-      crumb.page("rlal.allow_list_summary.breadcrumb", feature)(routes.AllowListSummaryController.onPageLoad(service, feature)) >
+      crumb.page("rlal.allow_list_summary.breadcrumb", feature)(routes.AllowListSummaryController.root(service, feature)) >
       crumb.current("rlal.set_new.breadcrumb")
   )
 }

@@ -19,7 +19,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListReport, FeatureSummary}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListReport, FeatureSummary, UserMode}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
 
 case class AllowListSummaryViewModel(
@@ -31,7 +31,7 @@ case class AllowListSummaryViewModel(
 
 object AllowListSummaryViewModel:
 
-  def apply(featureSummary: FeatureSummary, report: AllowListReport)(using messages: Messages): AllowListSummaryViewModel =
+  def apply(featureSummary: FeatureSummary, report: AllowListReport, userMode: UserMode)(using messages: Messages): AllowListSummaryViewModel =
     featureSummary match {
       case FeatureSummary(service, feature, tokens, canIssueTokens) =>
         val (statusMsg, statusActionMsg) = if canIssueTokens then
@@ -45,6 +45,21 @@ object AllowListSummaryViewModel:
             "rlal.allow_list_summary.allowList.onboardingStatus.action.Paused"
           )
 
+        val userActions = userMode match {
+          case UserMode.ReadOnly => Seq.empty
+          case UserMode.Admin =>
+            Seq(
+              ActionItemViewModel(
+                "rlal.allow_list_summary.users.newUserCount.action.incr",
+                routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
+
+              ).withVisuallyHiddenText(messages("rlal.allow_list_summary.users.newUserCount.action.incr.visuallyHidden")),
+              ActionItemViewModel(
+                "rlal.allow_list_summary.users.newUserCount.action.set",
+                routes.SetNewUserLimitController.onPageLoad(service, feature).url
+              ).withVisuallyHiddenText(messages("rlal.allow_list_summary.users.newUserCount.action.set.visuallyHidden"))
+            )
+        }
         val userSummary = SummaryListViewModel(
           List(
             SummaryListRowViewModel(
@@ -54,32 +69,27 @@ object AllowListSummaryViewModel:
             SummaryListRowViewModel(
               "rlal.allow_list_summary.users.newUserCount.label",
               ValueViewModel(tokens.toString),
-              Seq(
-                ActionItemViewModel(
-                  "rlal.allow_list_summary.users.newUserCount.action.incr",
-                  routes.IncreaseNewUserLimitController.onPageLoad(service, feature).url
-
-                ).withVisuallyHiddenText(messages("rlal.allow_list_summary.users.newUserCount.action.incr.visuallyHidden")),
-                ActionItemViewModel(
-                  "rlal.allow_list_summary.users.newUserCount.action.set",
-                  routes.SetNewUserLimitController.onPageLoad(service, feature).url
-                ).withVisuallyHiddenText(messages("rlal.allow_list_summary.users.newUserCount.action.set.visuallyHidden"))
-              )
+              userActions
             )
           )
         )
 
+        val allowListSummaryActions = userMode match {
+          case UserMode.ReadOnly => Seq.empty
+          case UserMode.Admin =>
+            Seq(
+              ActionItemViewModel(
+                statusActionMsg,
+                routes.ToggleNewUserOnboardingController.onPageLoad(service, feature).url
+              ).withVisuallyHiddenText(messages(statusActionMsg))
+            )
+        }
         val allListSummary = SummaryListViewModel(
           List(
             SummaryListRowViewModel(
               "rlal.allow_list_summary.allowList.onboardingStatus.label",
               ValueViewModel(statusMsg),
-              Seq(
-                ActionItemViewModel(
-                  statusActionMsg,
-                  routes.ToggleNewUserOnboardingController.onPageLoad(service, feature).url
-                ).withVisuallyHiddenText(messages(statusActionMsg))
-              )
+              allowListSummaryActions
             )
           )
         )

@@ -27,13 +27,13 @@ import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.i18n.MessagesApi
+import play.api.i18n.{Messages, MessagesApi}
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
-import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Done
@@ -46,17 +46,14 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
 
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
-  private val resources = List(
-    Resource.from("rate-limited-allow-list-admin-frontend", "bar"),
-    Resource.from("rate-limited-allow-list-admin-frontend", "foo")
-  )
+  private val retrievalResult = true
 
   val validAnswer = 0
 
   private val service = "fake-frontend"
   private val feature = "fake-feature"
 
-  lazy val onPageLoad = routes.SetNewUserLimitController.onPageLoad(service, feature)
+  val onPageLoad = routes.SetNewUserLimitController.onPageLoad(service, feature)
   lazy val onSubmit = routes.SetNewUserLimitController.onSubmit(service, feature)
 
   override def fakeApplication(): Application =
@@ -68,15 +65,16 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       )
       .build()
 
+  def messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+
   override def beforeEach(): Unit =
     super.beforeEach()
     Mockito.reset(stubBehaviour, mockConnector)
 
   "GET" should :
 
-
     "return OK and the correct view for a GET" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
@@ -90,13 +88,27 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       val form = formElems.get(0)
       form.attributes().get("action") mustEqual onSubmit.url
 
+    "must show the user an unauthorized screen when they are authenticated but do not have access" in :
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
+
+      val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
+      val result = route(app, request).value
+
+      status(result) mustBe UNAUTHORIZED
+      val html = Jsoup.parse(contentAsString(result))
+
+      val h1 = html.getElementsByTag("h1")
+      h1.size() mustEqual 1
+      h1.text() must include(messages("rlal.unauthorised.heading"))
+
     "must fail when the user is not authenticated (no auth token)" in :
       val request = FakeRequest(onPageLoad)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "must fail when the user is not authorised" in :
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.failed(new RuntimeException()))
       val request = FakeRequest(onPageLoad)
         .withSession("authToken" -> "Token some-token")
 
@@ -104,7 +116,7 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
 
   "POST" should:
     "redirect when the value is valid and submission is successful" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
       when(mockConnector.setTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
 
       val request = FakeRequest(POST, onSubmit.url)
@@ -114,14 +126,14 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.onPageLoad(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.set_new.flash.success", feature)
 
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
@@ -134,11 +146,27 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       val html = Jsoup.parse(contentAsString(result))
       html.getElementsByTag("form").size() mustEqual 1
 
+    "must show the user an unauthorized screen when they are authenticated but do not have access" in :
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
+
+      val request = FakeRequest(onSubmit)
+        .withSession("authToken" -> "Token some-token")
+        .withFormUrlEncodedBody("value" -> "false")
+
+      val result = route(app, request).value
+
+      status(result) mustBe UNAUTHORIZED
+      val html = Jsoup.parse(contentAsString(result))
+
+      val h1 = html.getElementsByTag("h1")
+      h1.size() mustEqual 1
+      h1.text() must include(messages("rlal.unauthorised.heading"))
 
     "fail when the user is not authenticated (no auth token)" in :
       val request = FakeRequest(onSubmit)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "fail when the user is not authorised" in :
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))

@@ -22,7 +22,7 @@ import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.Auth
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IncreaseNewUserLimitView
 
@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class IncreaseNewUserLimitController @Inject()(
   mcc: MessagesControllerComponents,
-  auth: Auth,
+  auth: AuthActions,
   connector: RateLimitedAllowListConnector,
   formProvider: IntFormProvider,
   view: IncreaseNewUserLimitView
@@ -56,7 +56,7 @@ class IncreaseNewUserLimitController @Inject()(
             Future.successful(BadRequest(view(formWithErrors, service, feature)))
           },
           userIncrement => connector.addTokens(service, feature, userIncrement).map(
-            _ => Redirect(routes.AllowListSummaryController.onPageLoad(service, feature))
+            _ => Redirect(routes.AllowListSummaryController.root(service, feature))
               .flashing("rlal-notification" -> summon[Messages]("rlal.increase.flash.success", feature))
           )
         )

@@ -23,24 +23,25 @@ import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AuthActions, RequireRetrievals}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SelectCreateAllowListView
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SelectViewAllowListView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Future
 
 
 @Singleton
-class SelectCreateAllowListController @Inject()(
+class SelectViewAllowListController @Inject()(
                                                  mcc: MessagesControllerComponents,
                                                  auth: AuthActions,
                                                  formProvider: StringFormProvider,
                                                  requireRetrievals: RequireRetrievals,
-                                                 view: SelectCreateAllowListView
-                                               ) extends FrontendController(mcc), I18nSupport, Logging:
+                                                 view: SelectViewAllowListView
+                                               ) extends FrontendController(mcc), I18nSupport, Logging {
 
   def onPageLoad(): Action[AnyContent] =
-    (auth.authenticated.retrieveLocations.admin() andThen requireRetrievals).async { request =>
+    auth.authenticated.retrieveLocations.all().andThen(requireRetrievals).async { request =>
       given AuthenticatedRequest[AnyContent, Set[Resource]] = request
+
       if request.retrieval.isEmpty then {
         logger.info("No services returned for user on load. Check if the user has been added to a team")
       }
@@ -49,23 +50,24 @@ class SelectCreateAllowListController @Inject()(
     }
 
   def onSubmit(): Action[AnyContent] =
-    (auth.authenticated.retrieveLocations.admin() andThen requireRetrievals).async { request =>
+    auth.authenticated.retrieveLocations.all().andThen(requireRetrievals).async { request =>
       given AuthenticatedRequest[AnyContent, Set[Resource]] = request
+
       if request.retrieval.isEmpty then {
         logger.info("No services returned for user on submit. Check if the user has been added to a team")
       }
 
       val submittedForm = formProvider("service", 100).bindFromRequest()
       submittedForm.fold(
-          formWithErrors => Future.successful(BadRequest(view(formWithErrors, request.retrieval.toSelectVM))),
-          selection =>
-            if request.retrieval.containsResource(selection) then
-              Future.successful(Redirect(routes.CreateAllowListController.onPageLoad(selection)))
-            else {
-              val formWithErrors = submittedForm.withError("value", "rlal.selectcreate.heading")
-              Future.successful(BadRequest(view(formWithErrors, request.retrieval.toSelectVM)))
-            }
+        formWithErrors => Future.successful(BadRequest(view(formWithErrors, request.retrieval.toSelectVM))),
+        selection =>
+          if request.retrieval.containsResource(selection) then
+            Future.successful(Redirect(routes.ServiceSummaryController.onPageLoad(selection)))
+          else {
+            val formWithErrors = submittedForm.withError("value", "rlal.selectcreate.heading")
+            Future.successful(BadRequest(view(formWithErrors, request.retrieval.toSelectVM)))
+          }
 
       )
     }
-    
+}

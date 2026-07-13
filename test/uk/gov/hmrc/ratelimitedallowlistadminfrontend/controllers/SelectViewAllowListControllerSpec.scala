@@ -27,53 +27,48 @@ import org.scalatest.{BeforeAndAfterEach, OptionValues}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
-import play.api.i18n.{Messages, MessagesApi}
+import play.api.i18n.MessagesApi
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
+import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Done
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
-class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
+class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
 
   private val stubBehaviour = mock[StubBehaviour]
-  private val mockConnector = mock[RateLimitedAllowListConnector]
-  private val retrieval = true
+  private val serviceName1 = "bar"
+  private val resourcesList = List(
+    Resource.from("rate-limited-allow-list-admin-frontend", serviceName1),
+    Resource.from("rate-limited-allow-list-admin-frontend", "foo")
+  )
+  private val resources = resourcesList.toSet
 
   val validAnswer = 0
 
-  private val service = "fake-frontend"
-  private val feature = "fake-feature"
-
-  lazy val onPageLoad = routes.IncreaseNewUserLimitController.onPageLoad(service, feature)
-  lazy val onSubmit = routes.IncreaseNewUserLimitController.onSubmit(service, feature)
+  lazy val onPageLoad = routes.SelectViewAllowListController.onPageLoad()
+  lazy val onSubmit = routes.SelectViewAllowListController.onSubmit()
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
     new GuiceApplicationBuilder()
-      .overrides(
-        bind[FrontendAuthComponents].toInstance(frontendAuthComponents),
-        bind[RateLimitedAllowListConnector].toInstance(mockConnector)
-      )
+      .overrides(bind[FrontendAuthComponents].toInstance(frontendAuthComponents))
       .build()
-
-  def messages: Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
   override def beforeEach(): Unit =
     super.beforeEach()
-    Mockito.reset(stubBehaviour, mockConnector)
+    Mockito.reset(stubBehaviour)
 
   "GET" should :
+
     "return OK and the correct view for a GET" in:
-      when(stubBehaviour.stubAuth[Boolean](any(), any())).thenReturn(Future.successful(retrieval))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
@@ -87,18 +82,22 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
       val form = formElems.get(0)
       form.attributes().get("action") mustEqual onSubmit.url
 
-    "must show the user an unauthorized screen when they are authenticated but do not have access" in :
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
+      val options = form.getElementsByTag("option").assertNotNull
+      options.size() mustEqual resources.size + 1
+      options.get(1).text() must include(resourcesList(0).resourceLocation.value)
+      options.get(2).text() must include(resourcesList(1).resourceLocation.value)
+
+    "redirect to index page when there are no services that the user can view" in :
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(Set.empty))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
 
-      status(result) mustBe UNAUTHORIZED
-      val html = Jsoup.parse(contentAsString(result))
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
 
-      val h1 = html.getElementsByTag("h1")
-      h1.size() mustEqual 1
-      h1.text() must include(messages("rlal.unauthorised.heading"))
+      val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+      flash(result).get("rlal-notification").value mustEqual messages("error.flash.retrievals_empty")
 
     "must fail when the user is not authenticated (no auth token)" in :
       val request = FakeRequest(onPageLoad)
@@ -107,69 +106,74 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
       redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "must fail when the user is not authorised" in :
-      when(stubBehaviour.stubAuth[Boolean](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.failed(new RuntimeException()))
       val request = FakeRequest(onPageLoad)
         .withSession("authToken" -> "Token some-token")
 
       route(app, request).value.failed.futureValue
 
   "POST" should:
-    "redirect when the value is valid and submission is successful" in:
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrieval))
-      when(mockConnector.addTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
+    "redirect to summary for service submission is successful" in:
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
 
       val request = FakeRequest(POST, onSubmit.url)
         .withSession("authToken" -> "Token some-token")
-        .withFormUrlEncodedBody("value" -> "100")
+        .withFormUrlEncodedBody("value" -> serviceName1)
 
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
-      
-      val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("rlal.increase.flash.success", feature)
+      redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(serviceName1).url
 
-    "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrieval))
+    "return a Bad Request and errors when a service name is submitted that is not known" in:
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
-        .withFormUrlEncodedBody("value" -> "-100")
+        .withFormUrlEncodedBody("value" -> "not-a-service-user-owns")
 
       val result = route(app, request).value
 
       status(result) mustEqual BAD_REQUEST
  
       val html = Jsoup.parse(contentAsString(result))
-      html.getElementsByTag("form").size() mustEqual 1
+      val formElems = html.getElementsByTag("form")
+      formElems.size() mustEqual 1
 
-    "must show the user an unauthorized screen when they are authenticated but do not have access" in :
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
+      val form = formElems.get(0)
+      form.attributes().get("action") mustEqual onSubmit.url
+
+      val options = form.getElementsByTag("option").assertNotNull
+      options.size() mustEqual resources.size + 1
+      options.get(1).text() must include(resourcesList(0).resourceLocation.value)
+      options.get(2).text() must include(resourcesList(1).resourceLocation.value)
+
+    "redirect to index page when there are no services that the user can view" in :
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(Set.empty))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
-        .withFormUrlEncodedBody("value" -> "1")
+        .withFormUrlEncodedBody("value" -> "not-a-service-user-owns")
 
       val result = route(app, request).value
 
-      status(result) mustBe UNAUTHORIZED
-      val html = Jsoup.parse(contentAsString(result))
+      status(result) mustEqual SEE_OTHER
+      redirectLocation(result).value mustEqual routes.IndexController.onPageLoad().url
 
-      val h1 = html.getElementsByTag("h1")
-      h1.size() mustEqual 1
-      h1.text() must include(messages("rlal.unauthorised.heading"))
+      val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
+      flash(result).get("rlal-notification").value mustEqual messages("error.flash.retrievals_empty")
 
-    "fail when the user is not authenticated (no auth token)" in :
+    "fail when the user is not authenticated (no auth token)" in:
       val request = FakeRequest(onSubmit)
-        .withFormUrlEncodedBody("value" -> "1")
+        .withFormUrlEncodedBody("value" -> "false")
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
       redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
-    "fail when the user is not authorised" in :
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.failed(new RuntimeException()))
+    "fail when the user is not authorised" in:
+      when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
+        .withFormUrlEncodedBody("value" -> "false")
 
       route(app, request).value.failed.futureValue

@@ -12,6 +12,10 @@ error.nonNegative = Enter a positive whole number
 error.boolean = Enter a boolean value
 error.string.length = The {0} must be {1} characters or less
 
+rlal.unauthorised.title = You do not have access to this resource
+rlal.unauthorised.heading = You do not have access to this resource
+rlal.unauthorised.guidance = If you need access to this resource and functionality, reach out to the owner of this service or the owners of the rate-limited-allow-list which can be found in Catalogue.
+
 error.flash.feature_not_found = Feature {1} not found for service {0}
 error.flash.retrievals_empty = There was an error fetching the services that you can manage. If you need support reach out to the team that owns this service which can be found in Catalogue.
 
@@ -23,10 +27,15 @@ rlal.index.active.p = Which service you would like to manage?
 rlal.index.active.empty = There are no services with allow lists for you to view or manage.
 rlal.index.task.h2 = Actions
 rlal.index.tasks.create = Create a new allow list
+rlal.index.tasks.view = Find and view an existing allow list
 
 rlal.selectcreate.title = Select the service for the new allow list
 rlal.selectcreate.heading = Select the service for the new allow list
 rlal.selectcreate.breadcrumb = Select service
+
+rlal.selectview.title = Which service does the allow list belong to?
+rlal.selectview.heading = Which service does the allow list belong to?
+rlal.selectview.breadcrumb = Select service
 
 rlal.service_summary.title = Allow lists for {0}
 rlal.service_summary.heading = Allow lists for {0}

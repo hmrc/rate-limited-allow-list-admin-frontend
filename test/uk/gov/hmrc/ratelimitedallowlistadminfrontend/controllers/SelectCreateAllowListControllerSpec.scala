@@ -34,9 +34,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{Done, FeatureSummary}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -89,8 +87,8 @@ class SelectCreateAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOn
       options.get(1).text() must include(resourcesList(0).resourceLocation.value)
       options.get(2).text() must include(resourcesList(1).resourceLocation.value)
 
-    "redirect to index page when there are no services that the user can manage" ignore:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(List.empty))
+    "redirect to index page when there are no services that the user can manage" in:
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(Set.empty))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
@@ -105,6 +103,7 @@ class SelectCreateAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOn
       val request = FakeRequest(onPageLoad)
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "must fail when the user is not authorised" in :
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.failed(new RuntimeException()))
@@ -149,8 +148,8 @@ class SelectCreateAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOn
       options.get(1).text() must include(resourcesList(0).resourceLocation.value)
       options.get(2).text() must include(resourcesList(1).resourceLocation.value)
 
-    "redirect to index page when there are no services that the user can manage" ignore :
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(List.empty))
+    "redirect to index page when there are no services that the user can manage" in :
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(Set.empty))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
@@ -169,6 +168,7 @@ class SelectCreateAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOn
         .withFormUrlEncodedBody("value" -> "false")
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
+      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "fail when the user is not authorised" in:
       when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
