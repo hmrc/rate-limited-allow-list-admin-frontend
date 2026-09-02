@@ -17,7 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
@@ -34,6 +34,7 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -43,12 +44,10 @@ import scala.reflect.ClassTag
 class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
 
   private val stubBehaviour = mock[StubBehaviour]
+  private val connectorMock = mock[RateLimitedAllowListConnector]
+
   private val serviceName1 = "bar"
-  private val resourcesList = List(
-    Resource.from("rate-limited-allow-list-admin-frontend", serviceName1),
-    Resource.from("rate-limited-allow-list-admin-frontend", "foo")
-  )
-  private val resources = resourcesList.toSet
+  val serviceNames = List(serviceName1, "foo")
 
   val validAnswer = 0
 
@@ -58,7 +57,10 @@ class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneA
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
     new GuiceApplicationBuilder()
-      .overrides(bind[FrontendAuthComponents].toInstance(frontendAuthComponents))
+      .overrides(
+        bind[FrontendAuthComponents].toInstance(frontendAuthComponents),
+        bind[RateLimitedAllowListConnector].toInstance(connectorMock),
+      )
       .build()
 
   override def beforeEach(): Unit =
@@ -68,7 +70,8 @@ class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneA
   "GET" should :
 
     "return OK and the correct view for a GET" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.unit)
+      when(connectorMock.getServices(eqTo("read"))(using any())).thenReturn(Future.successful(serviceNames))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
@@ -83,12 +86,13 @@ class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneA
       form.attributes().get("action") mustEqual onSubmit.url
 
       val options = form.getElementsByTag("option").assertNotNull
-      options.size() mustEqual resources.size + 1
-      options.get(1).text() must include(resourcesList(0).resourceLocation.value)
-      options.get(2).text() must include(resourcesList(1).resourceLocation.value)
+      options.size() mustEqual serviceNames.size + 1
+      options.get(1).text() must include(serviceNames(0))
+      options.get(2).text() must include(serviceNames(1))
 
     "redirect to index page when there are no services that the user can view" in :
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(Set.empty))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.unit)
+      when(connectorMock.getServices(eqTo("read"))(using any())).thenReturn(Future.successful(List.empty))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
@@ -114,7 +118,8 @@ class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneA
 
   "POST" should:
     "redirect to summary for service submission is successful" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.unit)
+      when(connectorMock.getServices(eqTo("read"))(using any())).thenReturn(Future.successful(serviceNames))
 
       val request = FakeRequest(POST, onSubmit.url)
         .withSession("authToken" -> "Token some-token")
@@ -126,7 +131,8 @@ class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneA
       redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(serviceName1).url
 
     "return a Bad Request and errors when a service name is submitted that is not known" in:
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(resources))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.unit)
+      when(connectorMock.getServices(eqTo("read"))(using any())).thenReturn(Future.successful(serviceNames))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
@@ -144,12 +150,13 @@ class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneA
       form.attributes().get("action") mustEqual onSubmit.url
 
       val options = form.getElementsByTag("option").assertNotNull
-      options.size() mustEqual resources.size + 1
-      options.get(1).text() must include(resourcesList(0).resourceLocation.value)
-      options.get(2).text() must include(resourcesList(1).resourceLocation.value)
+      options.size() mustEqual serviceNames.size + 1
+      options.get(1).text() must include(serviceNames(0))
+      options.get(2).text() must include(serviceNames(1))
 
     "redirect to index page when there are no services that the user can view" in :
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(Set.empty))
+      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.unit)
+      when(connectorMock.getServices(eqTo("read"))(using any())).thenReturn(Future.successful(List.empty))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")

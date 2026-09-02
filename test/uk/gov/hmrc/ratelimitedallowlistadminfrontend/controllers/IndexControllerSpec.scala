@@ -17,7 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
@@ -63,7 +63,7 @@ class IndexControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, Op
     "must display the page when the user is authorised" in:
       val serviceNames = List("service-1", "service-2")
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.unit)
-      when(connectorMock.getServices()(using any())).thenReturn(Future.successful(serviceNames))
+      when(connectorMock.getServices(eqTo("admin"))(using any())).thenReturn(Future.successful(serviceNames))
 
       val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
         .withSession("authToken" -> "Token some-token")
