@@ -48,28 +48,43 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
     val url = "/rate-limited-allow-list/services"
     val hc = HeaderCarrier()
 
-    "must return the metadata for all the service's features when the server responds with OK" in {
+    "for admin must return the metadata for all the service's features when the server responds with OK" in {
       val validResponse = List("service-1", "service-2", "service-3")
 
       server.stubFor(
-        get(urlMatching(url))
+        get(urlPathEqualTo(url))
+          .withQueryParam("permission", equalTo("admin"))
           .willReturn(
             aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse)))
           )
       )
 
-      val result = connector.getServices()(using hc).futureValue
+      val result = connector.getServices("admin")(using hc).futureValue
+      result mustEqual validResponse
+    }
+
+    "for read must return the metadata for all the service's features when the server responds with OK" in {
+      val validResponse = List("service-1", "service-2", "service-3")
+
+      server.stubFor(
+        get(urlPathEqualTo(url))
+          .withQueryParam("permission", equalTo("read"))
+          .willReturn(
+            aResponse().withStatus(OK).withBody(Json.stringify(Json.toJson(validResponse)))
+          )
+      )
+
+      val result = connector.getServices("read")(using hc).futureValue
       result mustEqual validResponse
     }
 
     "must fail when the server responds with anything else" in {
-
       server.stubFor(
-        get(urlMatching(url))
+        get(urlPathEqualTo(url))
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
 
-      connector.getServices()(using hc).failed.futureValue
+      connector.getServices("admin")(using hc).failed.futureValue
     }
   }
 

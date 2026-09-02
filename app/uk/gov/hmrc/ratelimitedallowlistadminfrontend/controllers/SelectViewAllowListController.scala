@@ -17,16 +17,20 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
-import play.api.i18n.I18nSupport
+import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+import uk.gov.hmrc.govukfrontend.views.viewmodels.select.{Select, SelectItem}
+import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
 import uk.gov.hmrc.internalauth.client.*
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AuthActions, RequireRetrievals}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SelectViewAllowListView
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 
 @Singleton
@@ -34,40 +38,72 @@ class SelectViewAllowListController @Inject()(
                                                  mcc: MessagesControllerComponents,
                                                  auth: AuthActions,
                                                  formProvider: StringFormProvider,
-                                                 requireRetrievals: RequireRetrievals,
+                                                 connector: RateLimitedAllowListConnector,
                                                  view: SelectViewAllowListView
-                                               ) extends FrontendController(mcc), I18nSupport, Logging {
-
+                                               )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging {
   def onPageLoad(): Action[AnyContent] =
-    auth.authenticated.retrieveLocations.all().andThen(requireRetrievals).async { request =>
-      given AuthenticatedRequest[AnyContent, Set[Resource]] = request
+    auth.authenticated().async { request =>
+      given AuthenticatedRequest[AnyContent, Unit] = request
 
-      if request.retrieval.isEmpty then {
-        logger.info("No services returned for user on load. Check if the user has been added to a team")
+      connector.getServices("read").map {
+        case services if (services.isEmpty) =>
+          logger.info("No services returned, no active lists")
+          
+          Redirect(routes.IndexController.onPageLoad())
+            .flashing(
+              "rlal-notification" -> summon[Messages]("error.flash.retrievals_empty"),
+              "rlal-notification-type" -> summon[Messages]("site.error")
+            )
+        case services =>
+          val items = services.map(service => SelectItem(text = service))
+
+          val vm = Select(
+            name = "value",
+            items = SelectItem(text = "", selected = true, disabled = true) +: items
+          ).asAccessibleAutocomplete(Some(AccessibleAutocomplete(showAllValues = true)))
+
+
+          Ok(view(formProvider("service", 100), vm))
       }
-
-      Future.successful(Ok(view(formProvider("service", 100), request.retrieval.toSelectVM)))
     }
 
   def onSubmit(): Action[AnyContent] =
-    auth.authenticated.retrieveLocations.all().andThen(requireRetrievals).async { request =>
-      given AuthenticatedRequest[AnyContent, Set[Resource]] = request
+    auth.authenticated().async { request =>
+      given AuthenticatedRequest[AnyContent, Unit] = request
 
-      if request.retrieval.isEmpty then {
-        logger.info("No services returned for user on submit. Check if the user has been added to a team")
+      connector.getServices("read").map {
+        case services if (services.isEmpty) =>
+          logger.info("No services returned, no active lists")
+
+          Redirect(routes.IndexController.onPageLoad())
+            .flashing(
+              "rlal-notification" -> summon[Messages]("error.flash.retrievals_empty"),
+              "rlal-notification-type" -> summon[Messages]("site.error")
+            )
+ 
+        case services =>
+          val items = services.map(service => SelectItem(text = service))
+
+          val vm = Select(
+            name = "value",
+            items = SelectItem(text = "", selected = true, disabled = true) +: items
+          ).asAccessibleAutocomplete(Some(AccessibleAutocomplete(showAllValues = true)))
+
+          val submittedForm = formProvider("service", 100).bindFromRequest()
+
+          submittedForm.fold(
+            formWithErrors => BadRequest(view(formWithErrors, vm)),
+            selection =>
+              if services.contains(selection) then
+                  Redirect(routes.ServiceSummaryController.onPageLoad(selection))
+              else
+                val formWithErrors = submittedForm.withError("value", "rlal.selectcreate.heading")
+                BadRequest(view(formWithErrors, vm))
+        )
+
+
       }
 
-      val submittedForm = formProvider("service", 100).bindFromRequest()
-      submittedForm.fold(
-        formWithErrors => Future.successful(BadRequest(view(formWithErrors, request.retrieval.toSelectVM))),
-        selection =>
-          if request.retrieval.containsResource(selection) then
-            Future.successful(Redirect(routes.ServiceSummaryController.onPageLoad(selection)))
-          else {
-            val formWithErrors = submittedForm.withError("value", "rlal.selectcreate.heading")
-            Future.successful(BadRequest(view(formWithErrors, request.retrieval.toSelectVM)))
-          }
 
-      )
     }
 }

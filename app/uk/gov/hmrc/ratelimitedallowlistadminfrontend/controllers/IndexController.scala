@@ -39,7 +39,7 @@ class IndexController @Inject()(
     auth.authenticated().async {
       request =>
         given Request[?] = request
-        connector.getServices().map:
+        connector.getServices("admin").map:
           activeServices =>
             Ok(view(activeServices.sorted))
     }
