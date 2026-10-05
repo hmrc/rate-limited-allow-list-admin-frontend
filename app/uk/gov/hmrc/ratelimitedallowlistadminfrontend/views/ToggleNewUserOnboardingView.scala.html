@@ -23,29 +23,29 @@
     govukBreadcrumbs: GovukBreadcrumbs
 )
 
-@(form: Form[_], summary: FeatureSummary)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], allowListConfig: AllowListConfiguration)(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(
     crumb.home >
-      crumb.page("rlal.service_summary.breadcrumb", summary.service)(routes.ServiceSummaryController.onPageLoad(summary.service)) >
-      crumb.page("rlal.allow_list_summary.breadcrumb", summary.feature)(routes.AllowListSummaryController.root(summary.service, summary.feature)) >
+      crumb.page("rlal.service_summary.breadcrumb", allowListConfig.service)(routes.ServiceSummaryController.onPageLoad(allowListConfig.service)) >
+      crumb.page("rlal.allow_list_summary.breadcrumb", allowListConfig.feature)(routes.AllowListSummaryController.root(allowListConfig.service, allowListConfig.feature)) >
       crumb.current("rlal.toggle.breadcrumb")
   )
 }
 
 @onOrOff = @{
-    if(summary.canIssueTokens){ ".on" }else{ ".off" }
+    if(allowListConfig.isEnabled){ ".on" }else{ ".off" }
 }
 
 
 @layout(pageTitle = Some(messages("rlal.toggle.title" + onOrOff)), beforeContent = Some(breadcrumbs)) {
 
-    @formHelper(action = routes.ToggleNewUserOnboardingController.onSubmit(summary.service, summary.feature), Symbol("autocomplete") -> "off") {
+    @formHelper(action = routes.ToggleNewUserOnboardingController.onSubmit(allowListConfig.service, allowListConfig.feature), Symbol("autocomplete") -> "off") {
         <fieldset class="govuk-fieldset">
 
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                <span class="govuk-caption-l">@summary.service</span>
+                <span class="govuk-caption-l">@allowListConfig.service</span>
                 <h1 class="govuk-heading-l">@messages("rlal.toggle.heading" + onOrOff)</h1>
             </legend>
 
@@ -54,7 +54,7 @@
             }
 
             <div class="govuk-inset-text">
-                <p>@messages("rlal.toggle.inset" + onOrOff, summary.feature)</p>
+                <p>@messages("rlal.toggle.inset" + onOrOff, allowListConfig.feature)</p>
             </div>
 
             @govukInput(

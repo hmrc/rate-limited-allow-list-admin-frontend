@@ -16,17 +16,18 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels
 
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, FeatureSummary}
+
+import scala.annotation.targetName
 
 case class ServiceSummaryViewModel(running: Seq[String], paused: Seq[String])
 
 object ServiceSummaryViewModel:
 
-  def apply(summaries: Seq[FeatureSummary]): ServiceSummaryViewModel = {
-    summaries.partition(_.canIssueTokens) match
+  def apply(allowLists: Seq[AllowListConfiguration]): ServiceSummaryViewModel =
+    allowLists.partition(_.isEnabled) match
       case (running, paused) =>
         ServiceSummaryViewModel(
           running.map(_.feature).sorted,
           paused.map(_.feature).sorted
         )
-  }

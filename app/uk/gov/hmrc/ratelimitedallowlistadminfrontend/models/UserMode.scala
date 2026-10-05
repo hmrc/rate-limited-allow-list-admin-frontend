@@ -18,6 +18,9 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
 enum UserMode {
   case Admin, ReadOnly
+  
+  def isAdmin: Boolean = this == Admin
+  
 }
 
 object UserMode {

@@ -100,10 +100,6 @@ class SelectViewAllowListController @Inject()(
                 val formWithErrors = submittedForm.withError("value", "rlal.selectcreate.heading")
                 BadRequest(view(formWithErrors, vm))
         )
-
-
       }
-
-
     }
 }

@@ -23,19 +23,19 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SetNewUserLimitView
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdate
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SetUserLimitView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-
 @Singleton
-class SetNewUserLimitController @Inject()(
+class SetUserLimitController @Inject()(
   mcc: MessagesControllerComponents,
   auth: AuthActions,
   connector: RateLimitedAllowListConnector,
   formProvider: IntFormProvider,
-  view: SetNewUserLimitView
+  view: SetUserLimitView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
   def onPageLoad(service: String, feature: String): Action[AnyContent] =
@@ -52,8 +52,11 @@ class SetNewUserLimitController @Inject()(
           formWithErrors => {
             Future.successful(BadRequest(view(formWithErrors, service, feature)))
           },
-          newUserLimit => connector.setTokens(service, feature, newUserLimit).map(
-            _ => Redirect(routes.AllowListSummaryController.root(service, feature))
-              .flashing("rlal-notification" -> summon[Messages]("rlal.set_new.flash.success", feature))
-          )
+          userLimit => 
+            connector
+              .updateAllowListConfig(service, feature, AllowListConfigUpdate(userLimit = Some(userLimit)))
+              .map( 
+                _ => Redirect(routes.AllowListSummaryController.root(service, feature))
+                  .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", feature))
+              )
         )

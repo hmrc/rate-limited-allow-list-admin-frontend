@@ -36,11 +36,13 @@ import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{Done, FeatureSummary}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, Done, FeatureSummary}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.reflect.ClassTag
+import java.time.Instant
 
 class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
 
@@ -51,12 +53,23 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
   private val service = "fake-frontend"
   private val feature = "fake-feature"
 
-  val featureSummary = FeatureSummary(service, feature, 20, false)
+  val allowListConfig = AllowListConfiguration(
+    service = service,
+    feature = feature,
+    isEnabled = true,
+    userLimitPerTimeframe = 10,
+    timeframe = Daily,
+    userLimit = Some(100),
+    percentageLoad = 50,
+    acceptedCounter = 125,
+    created = Instant.now,
+    lastUpdated = Instant.now
+  )
 
   val validAnswer = 0
 
-  lazy val onPageLoad = routes.ToggleNewUserOnboardingController.onPageLoad(service, feature)
-  lazy val onSubmit = routes.ToggleNewUserOnboardingController.onSubmit(service, feature)
+  private def onPageLoad = routes.ToggleNewUserOnboardingController.onPageLoad(service, feature)
+  private def onSubmit = routes.ToggleNewUserOnboardingController.onSubmit(service, feature)
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
@@ -77,8 +90,8 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
     "return OK and the correct view for a GET" in:
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getFeatureMetadata(any(), any())(using any()))
-        .thenReturn(Future.successful(Some(featureSummary)))
+      when(mockConnector.getAllowListConfig(any(), any())(using any()))
+        .thenReturn(Future.successful(Some(allowListConfig)))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
@@ -94,7 +107,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
     "redirect the user and with flash error to when there is not data" in :
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getFeatureMetadata(any(), any())(using any()))
+      when(mockConnector.getAllowListConfig(any(), any())(using any()))
         .thenReturn(Future.successful(None))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
@@ -135,7 +148,8 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
   "POST" should:
     "redirect with flash success when the value is valid and submission is successful" in:
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.setCanIssueTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
+      when(mockConnector.updateAllowListConfig(any(), any(), any())(using any()))
+        .thenReturn(Future.successful(Done))
 
       val request = FakeRequest(POST, onSubmit.url)
         .withSession("authToken" -> "Token some-token")
@@ -151,12 +165,12 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getFeatureMetadata(any(), any())(using any()))
-        .thenReturn(Future.successful(Some(featureSummary)))
+      when(mockConnector.getAllowListConfig(any(), any())(using any()))
+        .thenReturn(Future.successful(Some(allowListConfig)))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
-        .withFormUrlEncodedBody("value" -> "1")
+        .withFormUrlEncodedBody("value" -> "a")
 
       val result = route(app, request).value
 
@@ -165,9 +179,9 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val html = Jsoup.parse(contentAsString(result))
       html.getElementsByTag("form").size() mustEqual 1
 
-    "redirect the user on when there is an error with the form and and with flash error to when there is not data" in:
+    "redirect the user on when there is an error with the form and and with flash error to when the allow list is not found" in:
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getFeatureMetadata(any(), any())(using any())).thenReturn(Future.successful(None))
+      when(mockConnector.getAllowListConfig(any(), any())(using any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")

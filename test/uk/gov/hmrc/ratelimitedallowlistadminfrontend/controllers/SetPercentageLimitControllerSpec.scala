@@ -17,7 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
@@ -36,25 +36,25 @@ import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Done
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdate, Done}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
-class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
+class SetPercentageLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
 
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
-  private val retrieval = true
+  private val retrievalResult = true
 
   val validAnswer = 0
 
   private val service = "fake-frontend"
   private val feature = "fake-feature"
 
-  lazy val onPageLoad = routes.IncreaseNewUserLimitController.onPageLoad(service, feature)
-  lazy val onSubmit = routes.IncreaseNewUserLimitController.onSubmit(service, feature)
+  private def onPageLoad = routes.SetPercentageLimitController.onPageLoad(service, feature)
+  private def onSubmit = routes.SetPercentageLimitController.onSubmit(service, feature)
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
@@ -72,8 +72,9 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
     Mockito.reset(stubBehaviour, mockConnector)
 
   "GET" should :
+
     "return OK and the correct view for a GET" in:
-      when(stubBehaviour.stubAuth[Boolean](any(), any())).thenReturn(Future.successful(retrieval))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
       val result = route(app, request).value
@@ -107,7 +108,7 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
       redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "must fail when the user is not authorised" in :
-      when(stubBehaviour.stubAuth[Boolean](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.failed(new RuntimeException()))
       val request = FakeRequest(onPageLoad)
         .withSession("authToken" -> "Token some-token")
 
@@ -115,12 +116,16 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
 
   "POST" should:
     "redirect when the value is valid and submission is successful" in:
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrieval))
-      when(mockConnector.addTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
+      val percentage = 100
+
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
+      when(
+        mockConnector.updateAllowListConfig(any(), any(), eqTo(AllowListConfigUpdate(percentageLoad = Some(percentage))
+      ))(using any())).thenReturn(Future.successful(Done))
 
       val request = FakeRequest(POST, onSubmit.url)
         .withSession("authToken" -> "Token some-token")
-        .withFormUrlEncodedBody("value" -> "100")
+        .withFormUrlEncodedBody("value" -> s"$percentage")
 
       val result = route(app, request).value
 
@@ -128,10 +133,11 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("rlal.increase.flash.success", feature)
+      flash(result).get("rlal-notification").value mustEqual messages("rlal.set_user_limit.flash.success", feature)
+
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrieval))
+      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
@@ -149,7 +155,7 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
-        .withFormUrlEncodedBody("value" -> "1")
+        .withFormUrlEncodedBody("value" -> "false")
 
       val result = route(app, request).value
 
@@ -162,13 +168,12 @@ class IncreaseNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOne
 
     "fail when the user is not authenticated (no auth token)" in :
       val request = FakeRequest(onSubmit)
-        .withFormUrlEncodedBody("value" -> "1")
       val result = route(app, request).value
       status(result) mustBe SEE_OTHER
       redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
 
     "fail when the user is not authorised" in :
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")
 

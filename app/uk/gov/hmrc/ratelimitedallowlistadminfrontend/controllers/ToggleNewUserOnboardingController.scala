@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.BooleanFormProvider
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdate
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ToggleNewUserOnboardingView
 
 import javax.inject.{Inject, Singleton}
@@ -43,10 +44,10 @@ class ToggleNewUserOnboardingController @Inject()(
       request =>
         given Request[?] = request
         connector
-          .getFeatureMetadata(service, feature)
+          .getAllowListConfig(service, feature)
           .map:
-            case Some(metadata) =>
-              Ok(view(formProvider().fill(!metadata.canIssueTokens), metadata))
+            case Some(allowListConfig) =>
+              Ok(view(formProvider().fill(!allowListConfig.isEnabled), allowListConfig))
             case None =>
               Redirect(routes.AllowListSummaryController.root(service, feature))
                 .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
@@ -58,18 +59,21 @@ class ToggleNewUserOnboardingController @Inject()(
         given Request[?] = request
         formProvider().bindFromRequest().fold(
           formWithErrors => {
-            connector.getFeatureMetadata(service, feature).map {
-              case Some(metadata) =>
-                BadRequest(view(formWithErrors.fill(!metadata.canIssueTokens), metadata))
+            connector.getAllowListConfig(service, feature).map {
+              case Some(allowListConfig) =>
+                BadRequest(view(formWithErrors.fill(!allowListConfig.isEnabled), allowListConfig))
               case None =>
                 Redirect(routes.AllowListSummaryController.root(service, feature))
                 .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
             }
           },
-          bool => connector.setCanIssueTokens(service, feature, bool).map(
-            _ =>
-              val successMessageKey = if bool then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
-              Redirect(routes.AllowListSummaryController.root(service, feature))
-                .flashing("rlal-notification" -> summon[Messages](successMessageKey, feature))
-          )
+          b =>
+            connector
+              .updateAllowListConfig(service, feature, AllowListConfigUpdate(isEnabled = Some(b)))
+              .map(
+                _ =>
+                  val successMsg = if b then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
+                  Redirect(routes.AllowListSummaryController.root(service, feature))
+                    .flashing("rlal-notification" -> summon[Messages](successMsg, feature))
+              )
         )

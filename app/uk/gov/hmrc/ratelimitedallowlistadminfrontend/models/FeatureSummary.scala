@@ -18,6 +18,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
 import play.api.libs.json.{Json, OFormat}
 
+@deprecated("Linked to old version")
 case class FeatureSummary(service: String,
                           feature: String,
                           tokens: Int,
