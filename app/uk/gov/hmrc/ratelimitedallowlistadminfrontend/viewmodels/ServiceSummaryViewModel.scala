@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels
 
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, FeatureSummary}
-
-import scala.annotation.targetName
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
 
 case class ServiceSummaryViewModel(running: Seq[String], paused: Seq[String])
 

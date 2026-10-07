@@ -18,7 +18,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request, Result}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AdminUserRequest, AnyUserRequest, AuthActions, UserRequest}

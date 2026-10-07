@@ -38,7 +38,7 @@ import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, FeatureSummary}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
