@@ -47,7 +47,7 @@ object AllowListSummaryViewModel:
 
   def apply(allowListConfig: AllowListConfiguration, userMode: UserMode)(using messages: Messages): AllowListSummaryViewModel =
     val service = allowListConfig.service
-    val allowList = allowListConfig.feature
+    val allowList = allowListConfig.allowList
 
     val (statusMsg, statusActionMsg) = if allowListConfig.isEnabled then
       (

@@ -23,20 +23,20 @@
     govukBreadcrumbs: GovukBreadcrumbs
 )
 
-@(form: Form[_], service: String, feature: String)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], service: String, allowList: String)(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(
     crumb.home >
       crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
-      crumb.page("rlal.allow_list_summary.breadcrumb", feature)(routes.AllowListSummaryController.root(service, feature)) >
+      crumb.page("rlal.allow_list_summary.breadcrumb", allowList)(routes.AllowListSummaryController.root(service, allowList)) >
       crumb.current("rlal.set_percentage_limit.breadcrumb")
   )
 }
 
 @layout(pageTitle = Some(messages("rlal.set_percentage_limit.title")), beforeContent = Some(breadcrumbs)) {
 
-    @formHelper(action = routes.SetPercentageLimitController.onSubmit(service, feature), Symbol("autocomplete") -> "off") {
+    @formHelper(action = routes.SetPercentageLimitController.onSubmit(service, allowList), Symbol("autocomplete") -> "off") {
         <fieldset class="govuk-fieldset">
 
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--l govuk-!-margin-0">

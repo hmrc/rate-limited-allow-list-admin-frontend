@@ -29,7 +29,9 @@ case class AllowListConfiguration(service: String,
                                   percentageLoad: Int,
                                   acceptedCounter: Int,
                                   created: Instant,
-                                  lastUpdated: Instant)
+                                  lastUpdated: Instant) {
+  def allowList: String = feature
+}
 
 object AllowListConfiguration {
   given OFormat[AllowListConfiguration] = Json.format

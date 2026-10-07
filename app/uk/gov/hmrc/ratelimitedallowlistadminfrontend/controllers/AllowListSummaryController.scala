@@ -38,39 +38,39 @@ class AllowListSummaryController @Inject()(
   view: AllowListSummaryView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging {
 
-  def root(service: String, feature: String): Action[AnyContent] =
+  def root(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.service(service) {
       r =>
         r.userMode match {
-          case Admin => Redirect(routes.AllowListSummaryController.manage(service, feature)).flashing(r.flash)
-          case ReadOnly => Redirect(routes.AllowListSummaryController.view(service, feature))
+          case Admin => Redirect(routes.AllowListSummaryController.manage(service, allowList)).flashing(r.flash)
+          case ReadOnly => Redirect(routes.AllowListSummaryController.view(service, allowList))
         }
     }
 
-  def view(service: String, feature: String): Action[AnyContent] =
+  def view(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.service(service).async {
       request =>
         given AnyUserRequest[AnyContent] = request
-        onPageLoad(service, feature, ReadOnly)
+        onPageLoad(service, allowList, ReadOnly)
     }
 
-  def manage(service: String, feature: String): Action[AnyContent] =
+  def manage(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async {
       request =>
         given AdminUserRequest[?] = request
-        onPageLoad(service, feature, Admin)
+        onPageLoad(service, allowList, Admin)
     }
 
-  private def onPageLoad(service: String, feature: String, mode: UserMode)(using request: UserRequest[?]): Future[Result] =
+  private def onPageLoad(service: String, allowList: String, mode: UserMode)(using request: UserRequest[?]): Future[Result] =
     for
-      allowListConfigOpt <- connector.getAllowList(service, feature)
+      allowListConfigOpt <- connector.getAllowList(service, allowList)
     yield
       allowListConfigOpt match
         case Some(metadata) =>
           val vm = AllowListSummaryViewModel(metadata,  mode)
-          Ok(view(service, feature, Some(vm)))
+          Ok(view(service, allowList, Some(vm)))
 
         case None =>
-          logger.error(s"For service $service and feature $feature, allow list config was not None")
-          Ok(view(service, feature, None))
+          logger.error(s"No configuration found for service $service and allow list $allowList")
+          Ok(view(service, allowList, None))
 }

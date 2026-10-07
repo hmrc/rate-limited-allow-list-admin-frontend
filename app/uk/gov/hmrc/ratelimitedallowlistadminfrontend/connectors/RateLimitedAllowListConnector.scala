@@ -81,12 +81,12 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
       .execute[Option[List[AllowListConfiguration]]]
       .map(_.getOrElse(List.empty))
 
-  def getAllowList(service: String, feature: String)(using HeaderCarrier): Future[Option[AllowListConfiguration]] =
-    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/v2/services/$service/allow-lists/$feature")
+  def getAllowList(service: String, allowList: String)(using HeaderCarrier): Future[Option[AllowListConfiguration]] =
+    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/v2/services/$service/allow-lists/$allowList")
       .execute[Option[AllowListConfiguration]]
 
-  def getAllowListReport(service: String, feature: String)(using HeaderCarrier): Future[Option[AllowListReport]] =
-    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/v2/services/$service/allow-lists/$feature/report?frequency=daily")
+  def getAllowListReport(service: String, allowList: String)(using HeaderCarrier): Future[Option[AllowListReport]] =
+    httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/v2/services/$service/allow-lists/$allowList/report?frequency=daily")
       .execute[HttpResponse]
       .flatMap { response =>
         response.status match {

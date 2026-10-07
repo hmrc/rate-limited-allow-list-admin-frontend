@@ -117,7 +117,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("error.flash.feature_not_found", service, feature)
+      flash(result).get("rlal-notification").value mustEqual messages("error.flash.allow_list_not_found", service, feature)
 
     "must show the user an unauthorized screen when they are authenticated but do not have access" in :
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
@@ -193,7 +193,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("error.flash.feature_not_found", service, feature)
+      flash(result).get("rlal-notification").value mustEqual messages("error.flash.allow_list_not_found", service, feature)
 
     "must show the user an unauthorized screen when they are authenticated but do not have access" in :
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))

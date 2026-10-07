@@ -38,25 +38,25 @@ class SetPercentageLimitController @Inject()(
   view: SetPercentageLimitView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  def onPageLoad(service: String, feature: String): Action[AnyContent] =
+  def onPageLoad(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service):
       request =>
         given Request[?] = request
-        Ok(view(formProvider(), service, feature))
+        Ok(view(formProvider(), service, allowList))
 
-  def onSubmit(service: String, feature: String): Action[AnyContent] =
+  def onSubmit(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         formProvider().bindFromRequest().fold(
           formWithErrors => {
-            Future.successful(BadRequest(view(formWithErrors, service, feature)))
+            Future.successful(BadRequest(view(formWithErrors, service, allowList)))
           },
           percentage => 
             connector
-              .updateAllowListConfig(service, feature, AllowListConfigUpdate(percentageLoad = Some(percentage)))
+              .updateAllowListConfig(service, allowList, AllowListConfigUpdate(percentageLoad = Some(percentage)))
               .map( 
-                _ => Redirect(routes.AllowListSummaryController.root(service, feature))
-                  .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", feature))
+                _ => Redirect(routes.AllowListSummaryController.root(service, allowList))
+                  .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", allowList))
               )
         )

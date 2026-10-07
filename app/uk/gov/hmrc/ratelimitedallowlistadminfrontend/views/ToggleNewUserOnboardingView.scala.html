@@ -29,7 +29,7 @@
   @govukBreadcrumbs(
     crumb.home >
       crumb.page("rlal.service_summary.breadcrumb", allowListConfig.service)(routes.ServiceSummaryController.onPageLoad(allowListConfig.service)) >
-      crumb.page("rlal.allow_list_summary.breadcrumb", allowListConfig.feature)(routes.AllowListSummaryController.root(allowListConfig.service, allowListConfig.feature)) >
+      crumb.page("rlal.allow_list_summary.breadcrumb", allowListConfig.allowList)(routes.AllowListSummaryController.root(allowListConfig.service, allowListConfig.allowList)) >
       crumb.current("rlal.toggle.breadcrumb")
   )
 }
@@ -41,7 +41,7 @@
 
 @layout(pageTitle = Some(messages("rlal.toggle.title" + onOrOff)), beforeContent = Some(breadcrumbs)) {
 
-    @formHelper(action = routes.ToggleNewUserOnboardingController.onSubmit(allowListConfig.service, allowListConfig.feature), Symbol("autocomplete") -> "off") {
+    @formHelper(action = routes.ToggleNewUserOnboardingController.onSubmit(allowListConfig.service, allowListConfig.allowList), Symbol("autocomplete") -> "off") {
         <fieldset class="govuk-fieldset">
 
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
@@ -54,7 +54,7 @@
             }
 
             <div class="govuk-inset-text">
-                <p>@messages("rlal.toggle.inset" + onOrOff, allowListConfig.feature)</p>
+                <p>@messages("rlal.toggle.inset" + onOrOff, allowListConfig.allowList)</p>
             </div>
 
             @govukInput(

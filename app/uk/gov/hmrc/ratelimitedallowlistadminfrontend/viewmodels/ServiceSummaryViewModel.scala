@@ -26,6 +26,6 @@ object ServiceSummaryViewModel:
     allowLists.partition(_.isEnabled) match
       case (running, paused) =>
         ServiceSummaryViewModel(
-          running.map(_.feature).sorted,
-          paused.map(_.feature).sorted
+          running.map(_.allowList).sorted,
+          paused.map(_.allowList).sorted
         )

@@ -39,41 +39,41 @@ class ToggleNewUserOnboardingController @Inject()(
   view: ToggleNewUserOnboardingView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  def onPageLoad(service: String, feature: String): Action[AnyContent] =
+  def onPageLoad(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         connector
-          .getAllowList(service, feature)
+          .getAllowList(service, allowList)
           .map:
             case Some(allowListConfig) =>
               Ok(view(formProvider().fill(!allowListConfig.isEnabled), allowListConfig))
             case None =>
-              Redirect(routes.AllowListSummaryController.root(service, feature))
-                .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
+              Redirect(routes.AllowListSummaryController.root(service, allowList))
+                .flashing("rlal-notification" -> summon[Messages]("error.flash.allow_list_not_found", service, allowList))
 
 
-  def onSubmit(service: String, feature: String): Action[AnyContent] =
+  def onSubmit(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         formProvider().bindFromRequest().fold(
           formWithErrors => {
-            connector.getAllowList(service, feature).map {
+            connector.getAllowList(service, allowList).map {
               case Some(allowListConfig) =>
                 BadRequest(view(formWithErrors.fill(!allowListConfig.isEnabled), allowListConfig))
               case None =>
-                Redirect(routes.AllowListSummaryController.root(service, feature))
-                .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
+                Redirect(routes.AllowListSummaryController.root(service, allowList))
+                .flashing("rlal-notification" -> summon[Messages]("error.flash.allow_list_not_found", service, allowList))
             }
           },
           b =>
             connector
-              .updateAllowListConfig(service, feature, AllowListConfigUpdate(isEnabled = Some(b)))
+              .updateAllowListConfig(service, allowList, AllowListConfigUpdate(isEnabled = Some(b)))
               .map(
                 _ =>
                   val successMsg = if b then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
-                  Redirect(routes.AllowListSummaryController.root(service, feature))
-                    .flashing("rlal-notification" -> summon[Messages](successMsg, feature))
+                  Redirect(routes.AllowListSummaryController.root(service, allowList))
+                    .flashing("rlal-notification" -> summon[Messages](successMsg, allowList))
               )
         )
