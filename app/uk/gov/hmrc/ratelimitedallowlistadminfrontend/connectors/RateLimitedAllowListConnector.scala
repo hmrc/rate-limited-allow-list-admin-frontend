@@ -81,7 +81,7 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
       .execute[Option[List[AllowListConfiguration]]]
       .map(_.getOrElse(List.empty))
 
-  def getAllowListConfig(service: String, feature: String)(using HeaderCarrier): Future[Option[AllowListConfiguration]] =
+  def getAllowList(service: String, feature: String)(using HeaderCarrier): Future[Option[AllowListConfiguration]] =
     httpClient.get(url"$rateLimitedAllowListService/rate-limited-allow-list/v2/services/$service/allow-lists/$feature")
       .execute[Option[AllowListConfiguration]]
 

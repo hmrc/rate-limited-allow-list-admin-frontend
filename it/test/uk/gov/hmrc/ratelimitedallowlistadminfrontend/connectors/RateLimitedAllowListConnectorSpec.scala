@@ -158,7 +158,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
     }
   }
 
-  ".getAllowListConfig" - {
+  ".getAllowList" - {
     val serviceName = "service-name"
     val allowListName = "test-allow-list-value"
     val url = s"/rate-limited-allow-list/v2/services/$serviceName/allow-lists/$allowListName"
@@ -174,7 +174,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
           )
       )
 
-      val result = connector.getAllowListConfig(serviceName, allowListName)(using hc).futureValue
+      val result = connector.getAllowList(serviceName, allowListName)(using hc).futureValue
       result.value mustEqual validResponse
     }
 
@@ -187,7 +187,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
           )
       )
 
-      val result = connector.getAllowListConfig(serviceName, allowListName)(using hc).futureValue
+      val result = connector.getAllowList(serviceName, allowListName)(using hc).futureValue
       result mustEqual None
     }
 
@@ -197,7 +197,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
           .willReturn(aResponse().withStatus(INTERNAL_SERVER_ERROR))
       )
 
-      connector.getAllowListConfig(serviceName, allowListName)(using hc).failed.futureValue
+      connector.getAllowList(serviceName, allowListName)(using hc).failed.futureValue
     }
   }
 

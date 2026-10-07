@@ -44,7 +44,7 @@ class ToggleNewUserOnboardingController @Inject()(
       request =>
         given Request[?] = request
         connector
-          .getAllowListConfig(service, feature)
+          .getAllowList(service, feature)
           .map:
             case Some(allowListConfig) =>
               Ok(view(formProvider().fill(!allowListConfig.isEnabled), allowListConfig))
@@ -59,7 +59,7 @@ class ToggleNewUserOnboardingController @Inject()(
         given Request[?] = request
         formProvider().bindFromRequest().fold(
           formWithErrors => {
-            connector.getAllowListConfig(service, feature).map {
+            connector.getAllowList(service, feature).map {
               case Some(allowListConfig) =>
                 BadRequest(view(formWithErrors.fill(!allowListConfig.isEnabled), allowListConfig))
               case None =>

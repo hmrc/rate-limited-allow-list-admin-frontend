@@ -90,7 +90,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
     "return OK and the correct view for a GET" in:
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getAllowListConfig(any(), any())(using any()))
+      when(mockConnector.getAllowList(any(), any())(using any()))
         .thenReturn(Future.successful(Some(allowListConfig)))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
@@ -107,7 +107,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
     "redirect the user and with flash error to when there is not data" in :
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getAllowListConfig(any(), any())(using any()))
+      when(mockConnector.getAllowList(any(), any())(using any()))
         .thenReturn(Future.successful(None))
 
       val request = FakeRequest(onPageLoad).withSession("authToken" -> "Token some-token")
@@ -165,7 +165,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getAllowListConfig(any(), any())(using any()))
+      when(mockConnector.getAllowList(any(), any())(using any()))
         .thenReturn(Future.successful(Some(allowListConfig)))
 
       val request = FakeRequest(onSubmit)
@@ -181,7 +181,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
 
     "redirect the user on when there is an error with the form and and with flash error to when the allow list is not found" in:
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.getAllowListConfig(any(), any())(using any())).thenReturn(Future.successful(None))
+      when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(onSubmit)
         .withSession("authToken" -> "Token some-token")

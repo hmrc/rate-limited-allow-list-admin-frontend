@@ -110,7 +110,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
 
     "must display the page when the user is authorised and there are features for the service" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getAllowListConfig(any(), any())(using any())).thenReturn(Future.successful(Some(allowListConfig)))
+      when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(Some(allowListConfig)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -173,7 +173,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
 
     "must display the page when the user is authorised and the feature is not found" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getAllowListConfig(any(), any())(using any())).thenReturn(Future.successful(None))
+      when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -207,7 +207,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
 
     "must display the page when the user is authorised and there are features for the service" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
-      when(mockConnector.getAllowListConfig(any(), any())(using any())).thenReturn(Future.successful(Some(allowListConfig)))
+      when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(Some(allowListConfig)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -262,7 +262,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
 
     "must display the page when the user is authorised and the feature is not found" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
-      when(mockConnector.getAllowListConfig(any(), any())(using any())).thenReturn(Future.successful(None))
+      when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 

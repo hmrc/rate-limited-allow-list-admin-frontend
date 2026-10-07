@@ -63,7 +63,7 @@ class AllowListSummaryController @Inject()(
 
   private def onPageLoad(service: String, feature: String, mode: UserMode)(using request: UserRequest[?]): Future[Result] =
     for
-      allowListConfigOpt <- connector.getAllowListConfig(service, feature)
+      allowListConfigOpt <- connector.getAllowList(service, feature)
     yield
       allowListConfigOpt match
         case Some(metadata) =>
