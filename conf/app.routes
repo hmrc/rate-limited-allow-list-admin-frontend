@@ -34,6 +34,8 @@ POST  /manage/services/:service/allow-lists/:allowList/change-user-limit        
 GET   /manage/services/:service/allow-lists/:allowList/set-percentage           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetPercentageLimitController.onPageLoad(service: String, allowList: String)
 POST  /manage/services/:service/allow-lists/:allowList/set-percentage           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetPercentageLimitController.onSubmit(service: String, allowList: String)
 
+GET   /manage/services/:service/allow-lists/:allowList/change-rolling-limit         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetRollingLimitController.onPageLoad(service, allowList, timeframe: Option[Timeframe] ?= None)
+POST  /manage/services/:service/allow-lists/:allowList/change-rolling-limit         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetRollingLimitController.onSubmit(service, allowList, timeframe: Option[Timeframe] ?= None)
 
 ########################
 # Create an allow list

@@ -46,11 +46,21 @@ object AllowListSummaryViewModel:
     def dateTimeStr: String = formatterDate.format(i)
   }
 
-  def apply(allowListConfig: AllowListConfiguration, userMode: UserMode)(using messages: Messages): AllowListSummaryViewModel =
-    val service = allowListConfig.service
-    val allowList = allowListConfig.allowList
+  def apply(allowListConfig: AllowListConfiguration, userMode: UserMode)(using messages: Messages): AllowListSummaryViewModel = {
+    val AllowListConfiguration(
+      service,
+      allowList,
+      isEnabled,
+      userLimitPerTimeframe,
+      timeframe,
+      userLimit,
+      percentageLoad,
+      acceptedCounter,
+      created,
+      lastUpdated
+    ) = allowListConfig
 
-    val (statusMsg, statusActionMsg) = if allowListConfig.isEnabled then
+    val (statusMsg, statusActionMsg) = if isEnabled then
       (
         "rlal.allow_list_summary.allowList.onboardingStatus.value.Running",
         "rlal.allow_list_summary.allowList.onboardingStatus.action.Running"
@@ -65,11 +75,11 @@ object AllowListSummaryViewModel:
       List(
         SummaryListRowViewModel(
           "rlal.allow_list_summary.users.currentUserCount.label",
-          ValueViewModel(allowListConfig.acceptedCounter.toString)
+          ValueViewModel(acceptedCounter.toString)
         ),
         SummaryListRowViewModel(
           "rlal.allow_list_summary.users.percentageOnboarding.label",
-          ValueViewModel(s"${allowListConfig.percentageLoad}%"),
+          ValueViewModel(s"$percentageLoad%"),
           Option.when(userMode.isAdmin)(
             ActionItemViewModel(
               "rlal.allow_list_summary.users.percentageOnboarding.action",
@@ -81,20 +91,33 @@ object AllowListSummaryViewModel:
         ),
         SummaryListRowViewModel(
           "rlal.allow_list_summary.users.userTimeLimit.label",
-          ValueViewModel(messages("rlal.allow_list_summary.users.userTimeLimit.value", allowListConfig.userLimitPerTimeframe, allowListConfig.timeframe)),
+          ValueViewModel(
+            if userLimitPerTimeframe == 1 then
+              messages(
+                "rlal.allow_list_summary.users.userTimeLimit.singular.value",
+                userLimitPerTimeframe,
+                timeframe
+              )
+            else
+              messages(
+                "rlal.allow_list_summary.users.userTimeLimit.plural.value",
+                userLimitPerTimeframe,
+                timeframe
+              )
+          ),
           Option.when(userMode.isAdmin)(
             ActionItemViewModel(
               "rlal.allow_list_summary.users.userTimeLimit.action",
-              "" // TODO
+              routes.SetRollingLimitController.onPageLoad(service, allowList).url
             ).withVisuallyHiddenText(
-              messages("rlal.allow_list_summary.users.userTimeLimit.action.visuallyHidden", allowListConfig.timeframe)
+              messages("rlal.allow_list_summary.users.userTimeLimit.action.visuallyHidden", timeframe)
             )
           ).toList
         ),
         SummaryListRowViewModel(
           "rlal.allow_list_summary.users.totalUserLimit.label",
           ValueViewModel(
-            allowListConfig.userLimit match {
+            userLimit match {
               case Some(value) => messages("rlal.allow_list_summary.users.totalUserLimit.value", value)
               case None => messages("rlal.allow_list_summary.users.totalUserLimit.empty.value")
             }
@@ -104,7 +127,7 @@ object AllowListSummaryViewModel:
               "rlal.allow_list_summary.users.totalUserLimit.action",
               routes.SetUserLimitController.onPageLoad(service, allowList).url
             ).withVisuallyHiddenText(
-              messages("rlal.allow_list_summary.users.totalUserLimit.action.visuallyHidden", allowListConfig.timeframe)
+              messages("rlal.allow_list_summary.users.totalUserLimit.action.visuallyHidden", timeframe)
             )
           ).toList
         )
@@ -115,17 +138,17 @@ object AllowListSummaryViewModel:
       List(
         SummaryListRowViewModel(
           "rlal.allow_list_summary.allowList.lastUpdate.label",
-          ValueViewModel(allowListConfig.lastUpdated.dateTimeStr),
+          ValueViewModel(lastUpdated.dateTimeStr),
           List.empty
         ),
         SummaryListRowViewModel(
           "rlal.allow_list_summary.allowList.created.label",
-          ValueViewModel(allowListConfig.created.dateTimeStr),
+          ValueViewModel(created.dateTimeStr),
           List.empty
         ),
         SummaryListRowViewModel( // TODO: Get from API
           "rlal.allow_list_summary.allowList.endDate.label",
-          ValueViewModel(allowListConfig.created.plus(90, ChronoUnit.DAYS).atZone(ZoneId.of("UTC")).toInstant.dateTimeStr),
+          ValueViewModel(created.plus(90, ChronoUnit.DAYS).atZone(ZoneId.of("UTC")).toInstant.dateTimeStr),
           List.empty
         )
       )
@@ -143,20 +166,21 @@ object AllowListSummaryViewModel:
               routes.ToggleNewUserOnboardingController.onPageLoad(service, allowList).url
             )
           ).toList
-        ),
-//        SummaryListRowViewModel(
-//          "rlal.allow_list_summary.manage.delete.label",
-//          ValueViewModel(" "),
-//          Option.when(userMode.isAdmin)(
-//            ActionItemViewModel(
-//              "rlal.allow_list_summary.manage.delete.action",
-//              ""
-//            ).withVisuallyHiddenText(
-//              messages("rlal.allow_list_summary.manage.delete.action.visuallyHidden")
-//            )
-//          ).toList
-//        )
+        )
+        //        SummaryListRowViewModel(
+        //          "rlal.allow_list_summary.manage.delete.label",
+        //          ValueViewModel(" "),
+        //          Option.when(userMode.isAdmin)(
+        //            ActionItemViewModel(
+        //              "rlal.allow_list_summary.manage.delete.action",
+        //              ""
+        //            ).withVisuallyHiddenText(
+        //              messages("rlal.allow_list_summary.manage.delete.action.visuallyHidden")
+        //            )
+        //          ).toList
+        //        )
       )
     )
 
     AllowListSummaryViewModel(service, allowList, userSummary, summary, manage)
+  }

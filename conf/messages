@@ -10,6 +10,8 @@ error.required = Enter a value
 error.wholeNumber = Enter a whole number
 error.nonNumeric = Enter a number value
 error.nonNegative = Enter a positive whole number
+error.minNumber = Enter a number greater than or equal to {0}
+error.maxNumber = Enter a number less than or equal to {0}
 error.boolean = Enter a boolean value
 error.string.length = The {0} must be {1} characters or less
 
@@ -47,8 +49,8 @@ rlal.service_summary.paused.h2 = Paused allow lists
 rlal.service_summary.allow_list_paused_empty = There are no paused allow lists.
 
 
-rlal.allow_list_summary.title = View and manage {0}
-rlal.allow_list_summary.heading = View and manage {0}
+rlal.allow_list_summary.title = View and manage allow list {0}
+rlal.allow_list_summary.heading = View and manage allow list {0}
 rlal.allow_list_summary.users.heading = User onboarding
 
 rlal.allow_list_summary.users.currentUserCount.label = Onboarded users
@@ -59,7 +61,8 @@ rlal.allow_list_summary.users.percentageOnboarding.action.visuallyHidden = Chang
 
 
 rlal.allow_list_summary.users.userTimeLimit.label = Rolling user limit
-rlal.allow_list_summary.users.userTimeLimit.value = {0} users {1}
+rlal.allow_list_summary.users.userTimeLimit.singular.value = {0} user {1}
+rlal.allow_list_summary.users.userTimeLimit.plural.value = {0} users {1}
 rlal.allow_list_summary.users.userTimeLimit.action = Change
 rlal.allow_list_summary.users.userTimeLimit.action.visuallyHidden = Change the maximum number of users to onboard {0}
 
@@ -105,6 +108,8 @@ rlal.set_user_limit.values.label = Total number of users
 rlal.set_user_limit.values.hint = Enter a positive whole number
 rlal.set_user_limit.flash.success = Successfully set the maximum number of users to onboard to {0}
 
+rlal.set_rolling_limit_value.values.hint.nonEmpty = Enter a positive whole number greater than {0}
+
 rlal.set_percentage_limit.title = Set the percentage of new users to accept
 rlal.set_percentage_limit.heading = Set the percentage of new users to accept
 rlal.set_percentage_limit.breadcrumb = Set percentage
@@ -124,3 +129,14 @@ rlal.toggle.button.on = Pause
 rlal.toggle.button.off = Resume
 rlal.toggle.flash.success.paused = Successfully paused onboarding new users to {0} 
 rlal.toggle.flash.success.resumed = Successfully resumed onboarding new users to {0}
+
+rlal.set_rolling_limit_time.title = What time period would you like to use to limit new users?
+rlal.set_rolling_limit_time.heading = What time period would you like to use to limit new users?
+
+rlal.set_rolling_limit.breadcrumb = Set rolling limit
+rlal.set_rolling_limit_value.title = How many new users should be added {0}?
+rlal.set_rolling_limit_value.heading = How many new users should be added {0}?
+rlal.set_rolling_limit_value.values.hint = Enter a positive whole number
+rlal.set_rolling_limit_value.flash.success.singular = Successfully set a limit of {0} users {1}
+rlal.set_rolling_limit_value.flash.success.plural = Successfully set a limit of {0} users {1}
+rlal.set_rolling_limit_value.flash.success.unbound = Successfully removed limits on new users in a time period

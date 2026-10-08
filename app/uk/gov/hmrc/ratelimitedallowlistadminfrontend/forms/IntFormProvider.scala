@@ -19,12 +19,22 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
 
 import play.api.data.Form
 import play.api.data.Forms.mapping
+import play.api.i18n.Messages
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
 
 class IntFormProvider extends Mappings {
-  def apply(): Form[Int] = Form(
-    mapping(
-      "value" -> int().verifying(minimumValue(0, "error.nonNegative"))
-    )(identity)(Some.apply)
-  )
+  def apply(min: Option[Int] = None, max: Option[Int] = None)(using m: Messages): Form[Int] = {
+    val constraints =
+      min.map {
+        case 0 => minimumValue(0, "error.nonNegative")
+        case v => minimumValue(v, m("error.minNumber", v))
+      }.toList ++
+      max.map(v => maximumValue(v, m("error.maxNumber", v))).toList
+
+    Form(
+      mapping(
+        "value" -> int().verifying(constraints*)
+      )(identity)(Some.apply)
+    )
+  }
 }

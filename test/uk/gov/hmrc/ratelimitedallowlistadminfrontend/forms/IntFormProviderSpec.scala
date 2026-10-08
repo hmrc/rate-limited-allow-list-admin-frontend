@@ -19,24 +19,41 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
 import org.scalatest.OptionValues
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import play.api.i18n.Messages
+import play.api.test.Helpers
 
 class IntFormProviderSpec extends AnyWordSpec, Matchers, OptionValues:
 
-  val form = IntFormProvider()()
+  given Messages = Helpers.stubMessages()
 
   "must bind when given valid data" in {
     val data = Map("value" -> "100")
 
     val expected = 100
 
+    val form = IntFormProvider()()
     val boundForm = form.bind(data)
 
     boundForm.errors mustBe empty
     boundForm.value.value mustEqual expected
   }
   
-  "must fail to bind when value is negative a number" in {
+  "must fail to bind when the value is less than the minimum" in {
     val data = Map("value" -> "-100")
+    val form = IntFormProvider()(min = Some(10))
+    val boundForm = form.bind(data)
+
+    val field = boundForm("value")
+    field.errors.length mustBe 1
+
+    val error = field.error.value
+    error.message mustEqual "error.minNumber"
+    error.key mustEqual "value"
+  }
+
+  "must fail to bind when the value must be greater than 0" in {
+    val data = Map("value" -> "-100")
+    val form = IntFormProvider()(min = Some(0))
     val boundForm = form.bind(data)
 
     val field = boundForm("value")
@@ -47,8 +64,22 @@ class IntFormProviderSpec extends AnyWordSpec, Matchers, OptionValues:
     error.key mustEqual "value"
   }
 
-  "must fail to bind when value is not a number" in {
+  "must fail to bind when the value must be less than a maximum" in {
+    val data = Map("value" -> "100")
+    val form = IntFormProvider()(max = Some(10))
+    val boundForm = form.bind(data)
+
+    val field = boundForm("value")
+    field.errors.length mustBe 1
+
+    val error = field.error.value
+    error.message mustEqual "error.maxNumber"
+    error.key mustEqual "value"
+  }
+
+  "must fail to bind when the value is not a number" in {
     val data = Map("value" -> "foo")
+    val form = IntFormProvider()(min = Some(0))
     val boundForm = form.bind(data)
 
     val field = boundForm("value")
@@ -59,8 +90,8 @@ class IntFormProviderSpec extends AnyWordSpec, Matchers, OptionValues:
     error.key mustEqual "value"
   }
 
-  "must fail to bind when the feature is missing" in {
-
+  "must fail to bind when the value is missing" in {
+    val form = IntFormProvider()()
     val boundForm = form.bind(Map.empty[String, String])
     val field = boundForm("value")
 
@@ -73,6 +104,7 @@ class IntFormProviderSpec extends AnyWordSpec, Matchers, OptionValues:
   }
 
   "must fail when feature is blank" in {
+    val form = IntFormProvider()()
     val boundForm = form.bind(Map("value" -> "  "))
     val field = boundForm("value")
 

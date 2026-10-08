@@ -128,7 +128,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
       val userSummaryRows = html.getElementsByClass("govuk-summary-list").get(0).getElementsByClass("govuk-summary-list__row")
       userSummaryRows.size() mustEqual 4
 
-      val currentUserRow :: userPercentage :: rollingUser :: totalUsers :: Nil = userSummaryRows.asScala.toList
+      val currentUserRow :: userPercentage :: rollingUser :: totalUsers :: Nil = userSummaryRows.asScala.toList : @unchecked
 
       currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.acceptedCounter.toString)
       currentUserRow.getElementsByClass("govuk-summary-list__actions-list-item").size() mustEqual 0
@@ -153,7 +153,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
       val detailsRows = html.getElementsByClass("govuk-summary-list").get(1).getElementsByClass("govuk-summary-list__row")
       detailsRows.size() mustEqual 3
 
-      val lastUpdatedRow :: createdRow :: validUntilRow :: Nil = detailsRows.asScala.toList
+      val lastUpdatedRow :: createdRow :: validUntilRow :: Nil = detailsRows.asScala.toList : @unchecked
 
       lastUpdatedRow.getElementsByClass("govuk-summary-list__value").text() must include("GMT")
       createdRow.getElementsByClass("govuk-summary-list__value").text() must include("GMT")
@@ -225,7 +225,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
       val userSummaryRows = html.getElementsByClass("govuk-summary-list").get(0).getElementsByClass("govuk-summary-list__row")
       userSummaryRows.size() mustEqual 4
 
-      val currentUserRow :: userPercentage :: rollingUser :: totalUsers :: Nil = userSummaryRows.asScala.toList
+      val currentUserRow :: userPercentage :: rollingUser :: totalUsers :: Nil = userSummaryRows.asScala.toList : @unchecked
 
       currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.acceptedCounter.toString)
       currentUserRow.getElementsByClass("govuk-summary-list__actions-list-item").size() mustEqual 0
@@ -244,7 +244,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
       val detailsRows = html.getElementsByClass("govuk-summary-list").get(1).getElementsByClass("govuk-summary-list__row")
       detailsRows.size() mustEqual 3
 
-      val lastUpdatedRow :: createdRow :: validUntilRow :: Nil = detailsRows.asScala.toList
+      val lastUpdatedRow :: createdRow :: validUntilRow :: Nil = detailsRows.asScala.toList : @unchecked
 
       lastUpdatedRow.getElementsByClass("govuk-summary-list__value").text() must include("GMT")
       createdRow.getElementsByClass("govuk-summary-list__value").text() must include("GMT")

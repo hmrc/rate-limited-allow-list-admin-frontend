@@ -32,20 +32,27 @@ enum Timeframe(final val value: String) {
 
 object Timeframe:
   
-  given QueryStringBindable[Timeframe] = new QueryStringBindable[Timeframe] {
-    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Timeframe]] =
-      summon[QueryStringBindable[String]].bind(key, params).map(
-        _.fold(
-          x => Timeframe.values.find(_.value == x).toRight("Invalid value for timeframe"),
-          Left.apply
+  given Conversion[Timeframe, String] = _.value
+  
+  given QueryStringBindable[Option[Timeframe]] = new QueryStringBindable[Option[Timeframe]] {
+    override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Option[Timeframe]]] =
+      summon[QueryStringBindable[Option[String]]]
+        .bind(key, params)
+        .map(
+          _.fold(
+            Left.apply,
+            {
+              case Some(x) => Right(Timeframe.values.find(_.value == x))
+              case None    => Right(None)
+            }
+          )
         )
-      )
 
-    override def unbind(key: String, value: Timeframe): String =
-      summon[QueryStringBindable[String]].unbind(key, value.value)
+
+    override def unbind(key: String, value: Option[Timeframe]): String =
+      summon[QueryStringBindable[Option[String]]].unbind(key, value.map(_.value))
   }
-
-
+  
   given format: Format[Timeframe] = Format[Timeframe](
     Reads[Timeframe] {
       case JsString(Hourly.value) => JsSuccess(Hourly)

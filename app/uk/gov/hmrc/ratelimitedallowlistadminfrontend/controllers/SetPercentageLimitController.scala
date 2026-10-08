@@ -17,6 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
@@ -38,17 +39,19 @@ class SetPercentageLimitController @Inject()(
   view: SetPercentageLimitView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
+  private def form(using Messages): Form[Int] = formProvider(min = Some(0), max = Some(100))
+
   def onPageLoad(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service):
       request =>
         given Request[?] = request
-        Ok(view(formProvider(), service, allowList))
+        Ok(view(form, service, allowList))
 
   def onSubmit(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
-        formProvider().bindFromRequest().fold(
+        form.bindFromRequest().fold(
           formWithErrors => {
             Future.successful(BadRequest(view(formWithErrors, service, allowList)))
           },
