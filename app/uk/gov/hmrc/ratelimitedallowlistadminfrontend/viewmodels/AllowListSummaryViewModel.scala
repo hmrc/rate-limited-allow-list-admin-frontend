@@ -21,6 +21,7 @@ import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, UserMode}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.given
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit

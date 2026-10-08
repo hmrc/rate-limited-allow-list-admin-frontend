@@ -23,9 +23,14 @@ lazy val microservice = Project("rate-limited-allow-list-admin-frontend", file("
       "uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes",
       "uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.helpers.{given, *}",
       "uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*",
-      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.*"
+      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.*",
+      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.*",
+      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.given",
+      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.all.*",
+      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.govuk.styles.*"
     ),
     RoutesKeys.routesImport ++= Seq(
+      "uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*",
       "uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.*"
     )
   )
