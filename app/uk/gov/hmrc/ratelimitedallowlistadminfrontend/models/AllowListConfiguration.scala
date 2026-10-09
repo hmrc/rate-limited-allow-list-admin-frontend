@@ -18,26 +18,21 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
 import play.api.libs.json.{Json, OFormat}
 
-final case class CreateAllowListRequest(
-  feature: String,
-  userLimitPerTimeframe: Int,
-  timeframe: Timeframe,
-  userLimit: Option[Int],
-  percentageLoad: Int
-) {
-  def allowList: String = feature 
+import java.time.Instant
+
+case class AllowListConfiguration(service: String,
+                                  feature: String,
+                                  isEnabled: Boolean,
+                                  userLimitPerTimeframe: Int,
+                                  timeframe: Timeframe,
+                                  userLimit: Option[Int] = None,
+                                  percentageLoad: Int,
+                                  acceptedCounter: Int,
+                                  created: Instant,
+                                  lastUpdated: Instant) {
+  def allowList: String = feature
 }
 
-object CreateAllowListRequest {
-  
-  def default(allowList: String): CreateAllowListRequest =
-    CreateAllowListRequest(
-      feature = allowList,
-      timeframe = Timeframe.Weekly,
-      userLimitPerTimeframe = 0,
-      userLimit = None,
-      percentageLoad = 0
-    )
-  
-  given OFormat[CreateAllowListRequest] = Json.format
+object AllowListConfiguration {
+  given OFormat[AllowListConfiguration] = Json.format
 }

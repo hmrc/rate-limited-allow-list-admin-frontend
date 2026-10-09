@@ -21,6 +21,7 @@ import play.api.data.Forms.of
 import play.api.i18n.Messages
 
 import java.time.LocalDate
+import scala.deriving.Mirror
 
 trait Mappings extends Formatters with Constraints {
 
@@ -53,4 +54,12 @@ trait Mappings extends Formatters with Constraints {
                          nonNumericKey: String = "error.nonNumeric",
                          args: Seq[String] = Seq.empty): FieldMapping[BigDecimal] =
     of(currencyFormatter(requiredKey, invalidNumeric, nonNumericKey, args))
+
+
+  protected inline def radio[A](requiredKey: String = "error.required",
+                                              invalidKey: String = "error.invalid",
+                                              args: Seq[String] = Seq.empty
+                                             )(using m: Mirror.SumOf[A], conversion: Conversion[A, String]
+                                              ): FieldMapping[A] =
+    of(enumFormatter[A](requiredKey, invalidKey, args))
 }

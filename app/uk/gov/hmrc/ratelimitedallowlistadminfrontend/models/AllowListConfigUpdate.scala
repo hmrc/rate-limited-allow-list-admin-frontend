@@ -16,11 +16,16 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
-import play.api.libs.json.Json
-import play.api.libs.json.OFormat
 
-final case class TokenResponse(tokens: Int)
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe
 
-object TokenResponse:
-  given OFormat[TokenResponse] = Json.format
+case class AllowListConfigUpdate(userLimitPerTimeframe: Option[Int] = None,
+                                 timeframe: Option[Timeframe] = None,
+                                 userLimit: Option[Int] = None,
+                                 percentageLoad: Option[Int] = None,
+                                 isEnabled: Option[Boolean] = None)
 
+object AllowListConfigUpdate {
+  given OFormat[AllowListConfigUpdate] = Json.format
+}

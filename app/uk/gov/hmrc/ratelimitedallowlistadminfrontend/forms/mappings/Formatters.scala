@@ -19,6 +19,8 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings
 import play.api.data.FormError
 import play.api.data.format.Formatter
 
+import scala.compiletime.summonAll
+import scala.deriving.Mirror
 import scala.util.control.Exception.nonFatalCatch
 
 trait Formatters {
@@ -41,7 +43,7 @@ trait Formatters {
 
       private val baseFormatter = stringFormatter(requiredKey, args)
 
-      override def bind(key: String, data: Map[String, String]) =
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Boolean] =
         baseFormatter
           .bind(key, data)
           .flatMap {
@@ -50,7 +52,7 @@ trait Formatters {
           case _       => Left(Seq(FormError(key, invalidKey, args)))
         }
 
-      def unbind(key: String, value: Boolean) = Map(key -> value.toString)
+      def unbind(key: String, value: Boolean): Map[String, String] = Map(key -> value.toString)
     }
 
   private[mappings] def intFormatter(requiredKey: String, wholeNumberKey: String, nonNumericKey: String, args: Seq[String] = Seq.empty): Formatter[Int] =
@@ -60,7 +62,7 @@ trait Formatters {
 
       private val baseFormatter = stringFormatter(requiredKey, args)
 
-      override def bind(key: String, data: Map[String, String]) = {
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], Int] = {
         baseFormatter
           .bind(key, data)
           .map(_.replace(",", ""))
@@ -74,7 +76,7 @@ trait Formatters {
         }
       }
 
-      override def unbind(key: String, value: Int) =
+      override def unbind(key: String, value: Int): Map[String, String] =
         baseFormatter.unbind(key, value.toString)
     }
 
@@ -108,5 +110,28 @@ trait Formatters {
 
       override def unbind(key: String, value: BigDecimal): Map[String, String] =
         baseFormatter.unbind(key, value.toString)
+    }
+
+  private [mappings] inline def enumFormatter[A](requiredKey: String,
+                                                 invalidKey: String,
+                                                 args: Seq[String] = Seq.empty)(using m: Mirror.SumOf[A], conversion: Conversion[A, String]): Formatter[A] =
+    new Formatter[A] {
+      private val baseFormatter = stringFormatter(requiredKey, args)
+
+      private val valuesMap = {
+        val elems = summonAll[Tuple.Map[m.MirroredElemTypes, ValueOf]].toList.asInstanceOf[List[ValueOf[A]]].map(_.value)
+        elems.map(conversion).zip(elems).toMap
+      }
+
+      override def bind(key: String, data: Map[String, String]): Either[Seq[FormError], A] =
+        baseFormatter.bind(key, data).flatMap {
+          str =>
+            valuesMap.get(str)
+              .map(Right.apply)
+              .getOrElse(Left(Seq(FormError(key, invalidKey, args))))
+        }
+
+      override def unbind(key: String, value: A): Map[String, String] =
+        baseFormatter.unbind(key, conversion.apply(value))
     }
 }

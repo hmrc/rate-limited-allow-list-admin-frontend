@@ -23,6 +23,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.BooleanFormProvider
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdate
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ToggleNewUserOnboardingView
 
 import javax.inject.{Inject, Singleton}
@@ -38,38 +39,41 @@ class ToggleNewUserOnboardingController @Inject()(
   view: ToggleNewUserOnboardingView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  def onPageLoad(service: String, feature: String): Action[AnyContent] =
+  def onPageLoad(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         connector
-          .getFeatureMetadata(service, feature)
+          .getAllowList(service, allowList)
           .map:
-            case Some(metadata) =>
-              Ok(view(formProvider().fill(!metadata.canIssueTokens), metadata))
+            case Some(allowListConfig) =>
+              Ok(view(formProvider().fill(!allowListConfig.isEnabled), allowListConfig))
             case None =>
-              Redirect(routes.AllowListSummaryController.root(service, feature))
-                .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
+              Redirect(routes.AllowListSummaryController.root(service, allowList))
+                .flashing("rlal-notification" -> summon[Messages]("error.flash.allow_list_not_found", service, allowList))
 
 
-  def onSubmit(service: String, feature: String): Action[AnyContent] =
+  def onSubmit(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         formProvider().bindFromRequest().fold(
           formWithErrors => {
-            connector.getFeatureMetadata(service, feature).map {
-              case Some(metadata) =>
-                BadRequest(view(formWithErrors.fill(!metadata.canIssueTokens), metadata))
+            connector.getAllowList(service, allowList).map {
+              case Some(allowListConfig) =>
+                BadRequest(view(formWithErrors.fill(!allowListConfig.isEnabled), allowListConfig))
               case None =>
-                Redirect(routes.AllowListSummaryController.root(service, feature))
-                .flashing("rlal-notification" -> summon[Messages]("error.flash.feature_not_found", service, feature))
+                Redirect(routes.AllowListSummaryController.root(service, allowList))
+                .flashing("rlal-notification" -> summon[Messages]("error.flash.allow_list_not_found", service, allowList))
             }
           },
-          bool => connector.setCanIssueTokens(service, feature, bool).map(
-            _ =>
-              val successMessageKey = if bool then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
-              Redirect(routes.AllowListSummaryController.root(service, feature))
-                .flashing("rlal-notification" -> summon[Messages](successMessageKey, feature))
-          )
+          b =>
+            connector
+              .updateAllowListConfig(service, allowList, AllowListConfigUpdate(isEnabled = Some(b)))
+              .map(
+                _ =>
+                  val successMsg = if b then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
+                  Redirect(routes.AllowListSummaryController.root(service, allowList))
+                    .flashing("rlal-notification" -> summon[Messages](successMsg, allowList))
+              )
         )

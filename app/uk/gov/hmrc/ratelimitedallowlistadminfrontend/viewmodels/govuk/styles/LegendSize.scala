@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.govuk.styles
 
-import play.api.libs.json.Json
-import play.api.libs.json.OFormat
+sealed trait LegendSize
 
-final case class TokenRequest(tokens: Int)
-
-object TokenRequest:
-  given OFormat[TokenRequest] = Json.format
+object LegendSize {
+  case object ExtraLarge extends WithCssClass("govuk-fieldset__legend--xl") with LegendSize
+  case object Large      extends WithCssClass("govuk-fieldset__legend--l") with LegendSize
+  case object Medium     extends WithCssClass("govuk-fieldset__legend--m") with LegendSize
+  case object Small      extends WithCssClass("govuk-fieldset__legend--s") with LegendSize
+}

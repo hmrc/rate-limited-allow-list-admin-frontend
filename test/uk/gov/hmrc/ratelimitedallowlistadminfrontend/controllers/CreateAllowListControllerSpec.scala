@@ -36,7 +36,7 @@ import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{Done, FeatureSummary}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Done
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -48,8 +48,6 @@ class CreateAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
   private val mockConnector = mock[RateLimitedAllowListConnector]
   private val service = "fake-frontend"
   private val allowList = "fake-allowList"
-
-  val featureSummary = FeatureSummary(service, allowList, 20, false)
 
   val validAnswer = 0
 

@@ -17,7 +17,7 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import org.jsoup.Jsoup
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
@@ -36,13 +36,13 @@ import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Done
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdate, Done}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
-class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
+class SetUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSuite, OptionValues, MockitoSugar, BeforeAndAfterEach, ScalaFutures:
 
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
@@ -53,8 +53,8 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
   private val service = "fake-frontend"
   private val feature = "fake-feature"
 
-  val onPageLoad = routes.SetNewUserLimitController.onPageLoad(service, feature)
-  lazy val onSubmit = routes.SetNewUserLimitController.onSubmit(service, feature)
+  private def onPageLoad = routes.SetUserLimitController.onPageLoad(service, feature)
+  private def onSubmit = routes.SetUserLimitController.onSubmit(service, feature)
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
@@ -116,12 +116,16 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
 
   "POST" should:
     "redirect when the value is valid and submission is successful" in:
+      val value = 100
+      
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-      when(mockConnector.setTokens(any(), any(), any())(using any())).thenReturn(Future.successful(Done))
+      when(
+        mockConnector.updateAllowListConfig(any(), any(), eqTo(AllowListConfigUpdate(userLimit = Some(value))
+        ))(using any())).thenReturn(Future.successful(Done))
 
       val request = FakeRequest(POST, onSubmit.url)
         .withSession("authToken" -> "Token some-token")
-        .withFormUrlEncodedBody("value" -> "100")
+        .withFormUrlEncodedBody("value" -> s"$value")
 
       val result = route(app, request).value
 
@@ -129,7 +133,7 @@ class SetNewUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-      flash(result).get("rlal-notification").value mustEqual messages("rlal.set_new.flash.success", feature)
+      flash(result).get("rlal-notification").value mustEqual messages("rlal.set_user_limit.flash.success", feature)
 
 
     "return a Bad Request and errors when invalid data is submitted and rerender the form" in:

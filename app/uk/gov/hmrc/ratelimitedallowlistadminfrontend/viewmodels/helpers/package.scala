@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.i18n.Messages
+import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.Key
 
-case class FeatureSummary(service: String,
-                          feature: String,
-                          tokens: Int,
-                          canIssueTokens: Boolean)
+given (using messages: Messages): Conversion[String, Text] = 
+  string => Text(messages(string))
 
-
-object FeatureSummary:
-  given OFormat[FeatureSummary] = Json.format
-
+given (using messages: Messages): Conversion[String, Key] =
+  string => Key(content = Text(messages(string)))

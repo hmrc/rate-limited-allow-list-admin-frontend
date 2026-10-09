@@ -1,30 +1,48 @@
 # microservice specific routes
 
-->         /hmrc-frontend           hmrcfrontend.Routes
-GET        /assets/*file            controllers.Assets.versioned(path = "/public", file: Asset)
+->         /hmrc-frontend                           hmrcfrontend.Routes
+GET        /assets/*file                            controllers.Assets.versioned(path = "/public", file: Asset)
 
-GET   /                                                         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.onPageLoad()
+GET   /                                             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.onPageLoad()
 
-GET   /services/create/select-a-service                         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onPageLoad()
-POST  /services/create/select-a-service                         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onSubmit()
+################################
+# View an allow list or service
+################################
 
-GET   /services/view/select-a-service                           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onPageLoad()
-POST  /services/view/select-a-service                           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onSubmit()
+GET   /view/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onPageLoad()
+POST  /view/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onSubmit()
 
-GET   /services/:service/allow-lists                            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onPageLoad(service)
-POST  /services/:service/allow-lists                            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onSubmit(service)
+GET   /view/services/:service                               uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ServiceSummaryController.onPageLoad(service)
 
-GET   /services/:service                                        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ServiceSummaryController.onPageLoad(service)
+GET   /view/services/:service/allow-lists/:allowList        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.view(service, allowList)
 
-GET   /services/:service/allow-lists/:allowList                 uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList)
-GET   /services/:service/allow-lists/:allowList/manage          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.manage(service, allowList)
-GET   /services/:service/allow-lists/:allowList/view            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.view(service, allowList)
+GET   /services/:service/allow-lists/:allowList             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList)
 
-GET   /services/:service/features/:feature/manage/toggle        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onPageLoad(service: String, feature: String)
-POST  /services/:service/features/:feature/manage/toggle        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onSubmit(service: String, feature: String)
 
-GET   /services/:service/features/:feature/manage/increase      uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IncreaseNewUserLimitController.onPageLoad(service: String, feature: String)
-POST  /services/:service/features/:feature/manage/increase      uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IncreaseNewUserLimitController.onSubmit(service: String, feature: String)
+########################
+# Manage an allow list
+########################
 
-GET   /services/:service/features/:feature/manage/set           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetNewUserLimitController.onPageLoad(service: String, feature: String)
-POST  /services/:service/features/:feature/manage/set           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetNewUserLimitController.onSubmit(service: String, feature: String)
+GET   /manage/services/:service/allow-lists/:allowList                          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.manage(service, allowList)
+
+GET   /manage/services/:service/allow-lists/:allowList/change-status            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onPageLoad(service: String, allowList: String)
+POST  /manage/services/:service/allow-lists/:allowList/change-status            uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ToggleNewUserOnboardingController.onSubmit(service: String, allowList: String)
+
+GET   /manage/services/:service/allow-lists/:allowList/change-user-limit        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetUserLimitController.onPageLoad(service: String, allowList: String)
+POST  /manage/services/:service/allow-lists/:allowList/change-user-limit        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetUserLimitController.onSubmit(service: String, allowList: String)
+
+GET   /manage/services/:service/allow-lists/:allowList/set-percentage           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetPercentageLimitController.onPageLoad(service: String, allowList: String)
+POST  /manage/services/:service/allow-lists/:allowList/set-percentage           uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetPercentageLimitController.onSubmit(service: String, allowList: String)
+
+GET   /manage/services/:service/allow-lists/:allowList/change-rolling-limit         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetRollingLimitController.onPageLoad(service, allowList, timeframe: Option[Timeframe] ?= None)
+POST  /manage/services/:service/allow-lists/:allowList/change-rolling-limit         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetRollingLimitController.onSubmit(service, allowList, timeframe: Option[Timeframe] ?= None)
+
+########################
+# Create an allow list
+########################
+
+GET   /create/select-a-service                                          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onPageLoad()
+POST  /create/select-a-service                                          uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectCreateAllowListController.onSubmit()
+
+GET   /create/create-an-allow-list/:service                             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onPageLoad(service: String)
+POST  /create/create-an-allow-list/:service                             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.CreateAllowListController.onSubmit(service: String)

@@ -24,39 +24,42 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.IncreaseNewUserLimitView
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdate
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SetUserLimitView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-
 @Singleton
-class IncreaseNewUserLimitController @Inject()(
+class SetUserLimitController @Inject()(
   mcc: MessagesControllerComponents,
   auth: AuthActions,
   connector: RateLimitedAllowListConnector,
   formProvider: IntFormProvider,
-  view: IncreaseNewUserLimitView
+  view: SetUserLimitView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  private def form: Form[Int] = formProvider()
+  private def form(using Messages): Form[Int] = formProvider(min = Some(0))
 
-  def onPageLoad(service: String, feature: String): Action[AnyContent] =
+  def onPageLoad(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service):
       request =>
         given Request[?] = request
-        Ok(view(form, service, feature))
+        Ok(view(form, service, allowList))
 
-  def onSubmit(service: String, feature: String): Action[AnyContent] =
+  def onSubmit(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
         form.bindFromRequest().fold(
           formWithErrors => {
-            Future.successful(BadRequest(view(formWithErrors, service, feature)))
+            Future.successful(BadRequest(view(formWithErrors, service, allowList)))
           },
-          userIncrement => connector.addTokens(service, feature, userIncrement).map(
-            _ => Redirect(routes.AllowListSummaryController.root(service, feature))
-              .flashing("rlal-notification" -> summon[Messages]("rlal.increase.flash.success", feature))
-          )
+          userLimit => 
+            connector
+              .updateAllowListConfig(service, allowList, AllowListConfigUpdate(userLimit = Some(userLimit)))
+              .map( 
+                _ => Redirect(routes.AllowListSummaryController.root(service, allowList))
+                  .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", allowList))
+              )
         )

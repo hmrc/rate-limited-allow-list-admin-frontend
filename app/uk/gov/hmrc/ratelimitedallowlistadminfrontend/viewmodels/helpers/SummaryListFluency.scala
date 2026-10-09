@@ -16,20 +16,12 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers
 
-import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Content
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.*
 
 object summarylist extends SummaryListFluency
 
 trait SummaryListFluency {
-
-  implicit def stringToText(string: String)(implicit messages: Messages): Text =
-    Text(messages(string))
-
-  implicit def stringToKey(string: String)(implicit messages: Messages): Key =
-    Key(content = Text(messages(string)))
 
   object SummaryListViewModel {
     def apply(rows: Seq[SummaryListRow]): SummaryList =

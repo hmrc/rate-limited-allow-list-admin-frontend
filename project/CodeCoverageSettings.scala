@@ -15,7 +15,8 @@ object CodeCoverageSettings {
     "testOnly.*",
     "testOnlyDoNotUseInAppConf.*",
     "uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.javascript.*",
-    "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.*"
+    "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.*",
+    "uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.govuk.*"
   )
 
   val settings: Seq[Setting[_]] = Seq(

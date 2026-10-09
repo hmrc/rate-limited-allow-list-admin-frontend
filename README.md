@@ -1,15 +1,15 @@
 
 # rate-limited-allow-list-admin-frontend
 
-This service is intended to reduce the amount of code service teams need to write, maintain and later remove for managing a gradual rollout of a service or feature to a group of users (for example, as part of a private beta rollout). It is responsible for storing a list of the user's identifiers and the rollout limits, and allow the service can check against that list.
+This service is intended to reduce the amount of code service teams need to write, maintain and later remove for managing a gradual onboarding of users to a service or feature, for example as part of a private beta launch. It is responsible for storing the user identifiers in an allow list, storing the parameters for onboarding, and allow the service can check against that list.
 
-Specifically you can:
+In this frontend service the admin users can configure the onboarding parameters, which includes:
+- the percentage of new users to be added to the allow list
+- a limit on the number of new users
+- a limit on the number of new users in a time window
+- the status of onboarding which can be either active or paused.
 
-- Specify how many new users you want to onboard
-- Specify the maximum number of users you want to onboard
-- Stop onboarding for your service
-
-These actions can all be performed for multiple allow lists for a single service, by providing a "feature" argument that acts as a name for an allow list.
+A user who is not an owner of a service can view, but not change, the onboarding parameters.
 
 It is used in combination with [rate-limited-allow-list](https://github.com/hmrc/rate-limited-allow-list), which is responsible for storing the list of allowed identifiers that services can check against. The [readme for rate limited allow list](https://github.com/hmrc/user-allow-list/blob/main/README.md) provides a more complete description of what is and isn't supported, along with integration instructions.
 

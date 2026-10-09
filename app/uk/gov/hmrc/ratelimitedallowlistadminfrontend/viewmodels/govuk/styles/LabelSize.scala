@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.govuk.styles
 
-enum UserMode {
-  case Admin, ReadOnly
-  
-  def isAdmin: Boolean = this == Admin
-  
-}
+sealed trait LabelSize
 
-object UserMode {
-  def apply(isAdmin: Boolean): UserMode = if isAdmin then Admin else ReadOnly
+object LabelSize {
+  case object ExtraLarge extends WithCssClass("govuk-label--xl") with LabelSize
+  case object Large      extends WithCssClass("govuk-label--l") with LabelSize
+  case object Medium     extends WithCssClass("govuk-label--m") with LabelSize
+  case object Small      extends WithCssClass("govuk-label--s") with LabelSize
 }

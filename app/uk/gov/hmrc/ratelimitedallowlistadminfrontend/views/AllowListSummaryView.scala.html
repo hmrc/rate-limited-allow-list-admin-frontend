@@ -14,28 +14,26 @@
  * limitations under the License.
  *@
 
-@import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
-
 @this(layout: Layout,
       banner: BannerComponent,
       govukBreadcrumbs: GovukBreadcrumbs,
       govukSummaryList: GovukSummaryList,
 )
 
-@(service: String, feature: String, vm: Option[AllowListSummaryViewModel])(implicit request: Request[_], messages: Messages)
+@(service: String, allowList: String, vm: Option[AllowListSummaryViewModel])(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(
     crumb.home >
       crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
-      crumb.current("rlal.allow_list_summary.breadcrumb", feature)
+      crumb.current("rlal.allow_list_summary.breadcrumb", allowList)
   )
 }
 
-@layout(pageTitle = Some(messages("rlal.allow_list_summary.title", feature)), beforeContent = Some(breadcrumbs)) {
+@layout(pageTitle = Some(messages("rlal.allow_list_summary.title", allowList)), beforeContent = Some(breadcrumbs)) {
 
     <span class="govuk-caption-l">@{service}</span>
-    <h1 class="govuk-heading-l">@messages("rlal.allow_list_summary.heading", feature)</h1>
+    <h1 class="govuk-heading-l">@messages("rlal.allow_list_summary.heading", allowList)</h1>
 
     @banner()
 
@@ -49,7 +47,13 @@
             <h2 class="govuk-heading-m">@messages("rlal.allow_list_summary.allowList.heading")</h2>
             @govukSummaryList(vm.get.allowListSummary)
         </section>
+
+        <section class="govuk-body govuk-!-padding-top-6">
+          <h2 class="govuk-heading-m">@messages("rlal.allow_list_summary.manage.heading")</h2>
+          @govukSummaryList(vm.get.settings)
+        </section>
     }
+
     @if(vm.isEmpty) {
         <section class="govuk-body">
             <p id="not-found">@messages("rlal.allow_list_summary.not_found")</p>

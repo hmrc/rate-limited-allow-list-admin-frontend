@@ -41,9 +41,9 @@ class ServiceSummaryController @Inject()(
       request =>
         given Request[?] = request
         for
-          summaries <- connector.getFeatures(service)
+          summaries <- connector.getAllowLists(service)
         yield
           val vm = ServiceSummaryViewModel(summaries)
-            if (summaries.nonEmpty) then Ok(view(service, vm))
-            else NotFound(view(service, vm))
+          if (summaries.nonEmpty) then Ok(view(service, vm))
+          else NotFound(view(service, vm))
     }

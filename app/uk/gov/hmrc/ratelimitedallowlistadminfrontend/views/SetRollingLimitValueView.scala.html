@@ -1,0 +1,54 @@
+@*
+ * Copyright 2026 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *@
+
+@this(
+    layout: Layout,
+    formHelper: FormWithCSRF,
+    govukInput: GovukInput,
+    govukButton: GovukButton,
+    govukErrorSummary: GovukErrorSummary,
+    govukBreadcrumbs: GovukBreadcrumbs
+)
+
+@(form: Form[_], service: String, allowList: String, timeframe: Timeframe)(implicit request: Request[_], messages: Messages)
+
+@breadcrumbs = {
+  @govukBreadcrumbs(
+    crumb.home >
+      crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
+      crumb.page("rlal.allow_list_summary.breadcrumb", allowList)(routes.AllowListSummaryController.root(service, allowList)) >
+      crumb.current("rlal.set_rolling_limit.breadcrumb")
+  )
+}
+
+@layout(pageTitle = Some(messages("rlal.set_rolling_limit_value.title")), beforeContent = Some(breadcrumbs)) {
+
+    @formHelper(action = routes.SetRollingLimitController.onSubmit(service, allowList, Some(timeframe)) ) {
+        @if(form.errors.nonEmpty) {
+            @govukErrorSummary(ErrorSummary().withFormErrorsAsText(form))
+        }
+
+        <span class="govuk-caption-l">@service</span>
+        @govukInput(
+            InputViewModel(
+                field = form("value"),
+                label = LabelViewModel(messages("rlal.set_rolling_limit_value.heading", timeframe.toString)).asPageHeading()
+            ).withWidth(InputWidth.Full)
+        )
+
+        @govukButton(Button(content = Text(messages("site.submit"))))
+    }
+}

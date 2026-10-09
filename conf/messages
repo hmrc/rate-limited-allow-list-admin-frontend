@@ -10,6 +10,8 @@ error.required = Enter a value
 error.wholeNumber = Enter a whole number
 error.nonNumeric = Enter a number value
 error.nonNegative = Enter a positive whole number
+error.minNumber = Enter a number greater than or equal to {0}
+error.maxNumber = Enter a number less than or equal to {0}
 error.boolean = Enter a boolean value
 error.string.length = The {0} must be {1} characters or less
 
@@ -17,7 +19,7 @@ rlal.unauthorised.title = You do not have access to this resource
 rlal.unauthorised.heading = You do not have access to this resource
 rlal.unauthorised.guidance = If you need access to this resource and functionality, reach out to the owner of this service or the owners of the rate-limited-allow-list which can be found in Catalogue.
 
-error.flash.feature_not_found = Feature {1} not found for service {0}
+error.flash.allow_list_not_found = Allow list {1} not found for service {0}
 error.flash.retrievals_empty = There was an error fetching the services that you can manage. If you need support reach out to the team that owns this service which can be found in Catalogue.
 
 rlal.index.title = Administer rate limited allow lists
@@ -47,35 +49,51 @@ rlal.service_summary.paused.h2 = Paused allow lists
 rlal.service_summary.allow_list_paused_empty = There are no paused allow lists.
 
 
-rlal.allow_list_summary.title = View and manage {0}
-rlal.allow_list_summary.heading = View and manage {0}
-rlal.allow_list_summary.users.heading = User onboarding summary
+rlal.allow_list_summary.title = View and manage allow list {0}
+rlal.allow_list_summary.heading = View and manage allow list {0}
+rlal.allow_list_summary.users.heading = User onboarding
+
 rlal.allow_list_summary.users.currentUserCount.label = Onboarded users
-rlal.allow_list_summary.users.newUserCount.label = New user onboarding limit
-rlal.allow_list_summary.users.newUserCount.action.incr = Increase
-rlal.allow_list_summary.users.newUserCount.action.incr.visuallyHidden = Increase the number of new users to onboard for this allow list
-rlal.allow_list_summary.users.newUserCount.action.set = Set
-rlal.allow_list_summary.users.newUserCount.action.set.visuallyHidden = Set the total number of number of new users to onboard for this allow list
-rlal.allow_list_summary.allowList.heading = Allow list settings summary
-rlal.allow_list_summary.allowList.onboardingStatus.label = New user onboarding enabled
-rlal.allow_list_summary.allowList.onboardingStatus.value.Paused = No
-rlal.allow_list_summary.allowList.onboardingStatus.value.Running = Yes
+
+rlal.allow_list_summary.users.percentageOnboarding.label = Percentage of new users accepted
+rlal.allow_list_summary.users.percentageOnboarding.action = Change
+rlal.allow_list_summary.users.percentageOnboarding.action.visuallyHidden = Change the percentage of new users to onboard
+
+
+rlal.allow_list_summary.users.userTimeLimit.label = Rolling user limit
+rlal.allow_list_summary.users.userTimeLimit.singular.value = {0} user {1}
+rlal.allow_list_summary.users.userTimeLimit.plural.value = {0} users {1}
+rlal.allow_list_summary.users.userTimeLimit.action = Change
+rlal.allow_list_summary.users.userTimeLimit.action.visuallyHidden = Change the maximum number of users to onboard {0}
+
+rlal.allow_list_summary.users.totalUserLimit.label = Total user limit
+rlal.allow_list_summary.users.totalUserLimit.value = {0} users
+rlal.allow_list_summary.users.totalUserLimit.empty.value = No limit
+rlal.allow_list_summary.users.totalUserLimit.action = Change
+rlal.allow_list_summary.users.totalUserLimit.action.visuallyHidden = Change the maximum number of users to onboard
+
+rlal.allow_list_summary.allowList.heading = Allow list details
+
+rlal.allow_list_summary.allowList.onboardingStatus.label = New user onboarding
+rlal.allow_list_summary.allowList.onboardingStatus.value.Paused = Paused
+rlal.allow_list_summary.allowList.onboardingStatus.value.Running = Active
 rlal.allow_list_summary.allowList.onboardingStatus.action.Paused = Resume
 rlal.allow_list_summary.allowList.onboardingStatus.action.Running = Pause
 
+rlal.allow_list_summary.details.heading = Allow list details
+
+rlal.allow_list_summary.allowList.lastUpdate.label = Last updated
+rlal.allow_list_summary.allowList.created.label = Created
+rlal.allow_list_summary.allowList.endDate.label = Valid until
+
+rlal.allow_list_summary.manage.heading = Manage allow list
+
+rlal.allow_list_summary.manage.delete.label = Mark allow list for deletion
+rlal.allow_list_summary.manage.delete.action = Delete
+rlal.allow_list_summary.manage.delete.action.visuallyHidden = Mark allow list for deletion
+
 rlal.allow_list_summary.breadcrumb = {0}
 rlal.allow_list_summary.not_found = The allow list you are searching for cannot be found.
-
-rlal.increase.title = Increase the number of new users to onboard
-rlal.increase.heading = Increase the number of new users to onboard
-rlal.increase.breadcrumb = Increase users
-rlal.increase.guidance.heading = For example
-rlal.increase.guidance.before.sep = is
-rlal.increase.guidance.change = New user onboarding limit increased by 5.
-rlal.increase.guidance.after.sep = will be
-rlal.increase.values.label = How many more users should be onboarded?
-rlal.increase.values.hint = Enter a positive whole number
-rlal.increase.flash.success = Successfully increased the number of new users to onboard to {0}
 
 rlal.create_allow_list.title = What is the name of the new allow list?
 rlal.create_allow_list.heading = What is the name of the new allow list?
@@ -83,16 +101,20 @@ rlal.create_allow_list.breadcrumb = Create allow list
 rlal.create_allow_list.values.hint = Enter alpha-numeric characters a-z, A-Z, 0-9, and hyphens.
 rlal.create_allow_list.flash.success = Successfully created allow list {1} for service {0}
 
-rlal.set_new.title = Set the number of new users to onboard
-rlal.set_new.heading = Set the number of new users to onboard
-rlal.set_new.breadcrumb = Set new users
-rlal.set_new.guidance.heading = For example
-rlal.set_new.guidance.before.sep = is
-rlal.set_new.guidance.change = New user onboarding limit set to 25.
-rlal.set_new.guidance.after.sep = will be
-rlal.set_new.values.label = Total number of new users
-rlal.set_new.values.hint = Enter a positive whole number
-rlal.set_new.flash.success = Successfully set the number of new users to onboard to {0}
+rlal.set_user_limit.title = Set the maximum number of users to onboard
+rlal.set_user_limit.heading = Set the maximum number of users to onboard
+rlal.set_user_limit.breadcrumb = Set max users
+rlal.set_user_limit.values.label = Total number of users
+rlal.set_user_limit.values.hint = Enter a positive whole number
+rlal.set_user_limit.flash.success = Successfully set the maximum number of users to onboard to {0}
+
+rlal.set_rolling_limit_value.values.hint.nonEmpty = Enter a positive whole number greater than {0}
+
+rlal.set_percentage_limit.title = Set the percentage of new users to accept
+rlal.set_percentage_limit.heading = Set the percentage of new users to accept
+rlal.set_percentage_limit.breadcrumb = Set percentage
+rlal.set_percentage_limit.values.label = Percentage
+rlal.set_percentage_limit.values.hint = Enter a positive whole number between 0 and 100
 
 rlal.toggle.title.on = Pause onboarding new users
 rlal.toggle.title.off = Resume onboarding of new users
@@ -107,3 +129,14 @@ rlal.toggle.button.on = Pause
 rlal.toggle.button.off = Resume
 rlal.toggle.flash.success.paused = Successfully paused onboarding new users to {0} 
 rlal.toggle.flash.success.resumed = Successfully resumed onboarding new users to {0}
+
+rlal.set_rolling_limit_time.title = What time period would you like to use to limit new users?
+rlal.set_rolling_limit_time.heading = What time period would you like to use to limit new users?
+
+rlal.set_rolling_limit.breadcrumb = Set rolling limit
+rlal.set_rolling_limit_value.title = How many new users should be added {0}?
+rlal.set_rolling_limit_value.heading = How many new users should be added {0}?
+rlal.set_rolling_limit_value.values.hint = Enter a positive whole number
+rlal.set_rolling_limit_value.flash.success.singular = Successfully set a limit of {0} users {1}
+rlal.set_rolling_limit_value.flash.success.plural = Successfully set a limit of {0} users {1}
+rlal.set_rolling_limit_value.flash.success.unbound = Successfully removed limits on new users in a time period

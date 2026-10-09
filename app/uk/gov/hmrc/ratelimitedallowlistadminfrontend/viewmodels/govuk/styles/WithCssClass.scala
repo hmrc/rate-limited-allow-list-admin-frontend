@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.govuk.styles
 
-import play.api.libs.json.Json
-import play.api.libs.json.OFormat
-
-case class IssueTokenStatusUpdateRequest(canIssueTokens: Boolean)
-
-object IssueTokenStatusUpdateRequest:
-  given OFormat[IssueTokenStatusUpdateRequest] = Json.format
+abstract class WithCssClass(className: String) {
+  override val toString: String = className
+}

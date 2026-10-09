@@ -1,5 +1,5 @@
 /*
- * Copyright 2026 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
+package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers
 
-enum UserMode {
-  case Admin, ReadOnly
-  
-  def isAdmin: Boolean = this == Admin
-  
-}
-
-object UserMode {
-  def apply(isAdmin: Boolean): UserMode = if isAdmin then Admin else ReadOnly
-}
+object all
+  extends FieldsetFluency,
+    InputFluency,
+    LabelFluency,
+    RadiosFluency,
+    SummaryListFluency

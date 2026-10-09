@@ -17,43 +17,49 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SetNewUserLimitView
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdate
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SetPercentageLimitView
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-
 @Singleton
-class SetNewUserLimitController @Inject()(
+class SetPercentageLimitController @Inject()(
   mcc: MessagesControllerComponents,
   auth: AuthActions,
   connector: RateLimitedAllowListConnector,
   formProvider: IntFormProvider,
-  view: SetNewUserLimitView
+  view: SetPercentageLimitView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
 
-  def onPageLoad(service: String, feature: String): Action[AnyContent] =
+  private def form(using Messages): Form[Int] = formProvider(min = Some(0), max = Some(100))
+
+  def onPageLoad(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service):
       request =>
         given Request[?] = request
-        Ok(view(formProvider(), service, feature))
+        Ok(view(form, service, allowList))
 
-  def onSubmit(service: String, feature: String): Action[AnyContent] =
+  def onSubmit(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
         given Request[?] = request
-        formProvider().bindFromRequest().fold(
+        form.bindFromRequest().fold(
           formWithErrors => {
-            Future.successful(BadRequest(view(formWithErrors, service, feature)))
+            Future.successful(BadRequest(view(formWithErrors, service, allowList)))
           },
-          newUserLimit => connector.setTokens(service, feature, newUserLimit).map(
-            _ => Redirect(routes.AllowListSummaryController.root(service, feature))
-              .flashing("rlal-notification" -> summon[Messages]("rlal.set_new.flash.success", feature))
-          )
+          percentage => 
+            connector
+              .updateAllowListConfig(service, allowList, AllowListConfigUpdate(percentageLoad = Some(percentage)))
+              .map( 
+                _ => Redirect(routes.AllowListSummaryController.root(service, allowList))
+                  .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", allowList))
+              )
         )

@@ -37,8 +37,10 @@ import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBeh
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.FeatureSummary
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -47,13 +49,24 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
   private val stubBehaviour = mock[StubBehaviour]
   private val mockConnector = mock[RateLimitedAllowListConnector]
   val service = "fake-frontend"
-  val feature1 = "feature 1"
-  val feature2 = "feature 2"
-  val feature3 = "feature 3"
+  val allowList1 = "allowList-1"
+  val allowList2 = "allowList-2"
+  val allowList3 = "allowList-3"
 
-  val summary1 = FeatureSummary(service, feature1, 10, true)
-  val summary2 = FeatureSummary(service, feature2, 20, false)
-  val summary3 = FeatureSummary(service, feature3, 30, true)
+  val config1 = AllowListConfiguration(
+    service = service,
+    feature = allowList1,
+    isEnabled = true,
+    userLimitPerTimeframe = 10,
+    timeframe = Daily,
+    userLimit = Some(100),
+    percentageLoad = 10,
+    acceptedCounter = 125,
+    created = Instant.now,
+    lastUpdated = Instant.now
+  )
+  val config2: AllowListConfiguration = config1.copy(feature = allowList2, percentageLoad = 20, isEnabled = false)
+  val config3: AllowListConfiguration = config1.copy(feature = allowList3, percentageLoad = 30)
 
   override def fakeApplication(): Application =
     val frontendAuthComponents = FrontendAuthComponentsStub(stubBehaviour)(stubControllerComponents(), global)
@@ -76,7 +89,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     "must display the page" when {
       "user is an authorised admin and there are allow lists for the service" in {
         when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-        when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary2, summary1)))
+        when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config2, config1)))
 
         val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -89,7 +102,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
       "user is authorised but not an admin, and there are allow lists for the service" in {
         when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(false))
-        when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary2, summary1)))
+        when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config2, config1)))
 
         val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -103,7 +116,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
     "must display the page when the user is authorised and all allow lists are running" in {
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary3, summary1)))
+      when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config1)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -118,8 +131,8 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
       val runningAllowListsList = runningSection.getElementsByTag("li")
       runningAllowListsList.size() mustEqual 2
-      runningAllowListsList.get(0).text() must include(feature1)
-      runningAllowListsList.get(1).text() must include(feature3)
+      runningAllowListsList.get(0).text() must include(allowList1)
+      runningAllowListsList.get(1).text() must include(allowList3)
 
       val pausedAllowListsList = pausedSection.getElementsByTag("li")
       pausedAllowListsList.size() mustEqual 0
@@ -130,7 +143,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
     "must display the page when the user is authorised and all allow lists are paused" in {
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List(summary2)))
+      when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config2)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -151,12 +164,12 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
       val pausedAllowListsList = pausedSection.getElementsByTag("li")
       pausedAllowListsList.size() mustEqual 1
-      pausedAllowListsList.get(0).text() must include(feature2)
+      pausedAllowListsList.get(0).text() must include(allowList2)
     }
 
     "must display the page when the user is authorised and there are no allow lists for the service" in {
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getFeatures(any())(using any())).thenReturn(Future.successful(List.empty))
+      when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List.empty))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -201,10 +214,10 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
 
     val runningAllowListsList = runningSection.getElementsByTag("li")
     runningAllowListsList.size() mustEqual 2
-    runningAllowListsList.get(0).text() must include(feature1)
-    runningAllowListsList.get(1).text() must include(feature3)
+    runningAllowListsList.get(0).text() must include(allowList1)
+    runningAllowListsList.get(1).text() must include(allowList3)
 
     val pausedAllowListsList = pausedSection.getElementsByTag("li")
     pausedAllowListsList.size() mustEqual 1
-    pausedAllowListsList.get(0).text() must include(feature2)
+    pausedAllowListsList.get(0).text() must include(allowList2)
   }
