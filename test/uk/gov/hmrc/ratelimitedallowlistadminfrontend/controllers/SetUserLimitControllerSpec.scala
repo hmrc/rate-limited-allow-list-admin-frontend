@@ -36,7 +36,7 @@ import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdate, Done}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdateRequest, Done}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -120,7 +120,7 @@ class SetUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSu
       
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
       when(
-        mockConnector.updateAllowListConfig(any(), any(), eqTo(AllowListConfigUpdate(userLimit = Some(value))
+        mockConnector.updateAllowListConfig(any(), any(), eqTo(AllowListConfigUpdateRequest(userLimit = Some(value))
         ))(using any())).thenReturn(Future.successful(Done))
 
       val request = FakeRequest(POST, onSubmit.url)

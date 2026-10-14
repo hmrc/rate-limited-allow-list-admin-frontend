@@ -15,6 +15,12 @@ error.maxNumber = Enter a number less than or equal to {0}
 error.boolean = Enter a boolean value
 error.string.length = The {0} must be {1} characters or less
 
+models.Timeframe.hourly = hourly
+models.Timeframe.daily = daily
+models.Timeframe.weekdaily = working days (Monday to Friday)
+models.Timeframe.weekly = weekly (Sunday to Sunday)
+models.Timeframe.unbounded = No limit
+
 rlal.unauthorised.title = You do not have access to this resource
 rlal.unauthorised.heading = You do not have access to this resource
 rlal.unauthorised.guidance = If you need access to this resource and functionality, reach out to the owner of this service or the owners of the rate-limited-allow-list which can be found in Catalogue.
@@ -61,8 +67,9 @@ rlal.allow_list_summary.users.percentageOnboarding.action.visuallyHidden = Chang
 
 
 rlal.allow_list_summary.users.userTimeLimit.label = Rolling user limit
-rlal.allow_list_summary.users.userTimeLimit.singular.value = {0} user {1}
-rlal.allow_list_summary.users.userTimeLimit.plural.value = {0} users {1}
+rlal.allow_list_summary.users.userTimeLimit.unbounded = No limit
+rlal.allow_list_summary.users.userTimeLimit.value.singular = {0} user {1}
+rlal.allow_list_summary.users.userTimeLimit.value.plural = {0} users {1}
 rlal.allow_list_summary.users.userTimeLimit.action = Change
 rlal.allow_list_summary.users.userTimeLimit.action.visuallyHidden = Change the maximum number of users to onboard {0}
 
@@ -130,13 +137,12 @@ rlal.toggle.button.off = Resume
 rlal.toggle.flash.success.paused = Successfully paused onboarding new users to {0} 
 rlal.toggle.flash.success.resumed = Successfully resumed onboarding new users to {0}
 
-rlal.set_rolling_limit_time.title = What time period would you like to use to limit new users?
-rlal.set_rolling_limit_time.heading = What time period would you like to use to limit new users?
-
 rlal.set_rolling_limit.breadcrumb = Set rolling limit
-rlal.set_rolling_limit_value.title = How many new users should be added {0}?
-rlal.set_rolling_limit_value.heading = How many new users should be added {0}?
-rlal.set_rolling_limit_value.values.hint = Enter a positive whole number
-rlal.set_rolling_limit_value.flash.success.singular = Successfully set a limit of {0} users {1}
-rlal.set_rolling_limit_value.flash.success.plural = Successfully set a limit of {0} users {1}
-rlal.set_rolling_limit_value.flash.success.unbound = Successfully removed limits on new users in a time period
+rlal.set_rolling_limit.flash.success.unbounded = Successfully removed limits on new users in a time period
+rlal.set_rolling_limit.flash.success.singular = Successfully set a limit of {0} users {1}
+rlal.set_rolling_limit.flash.success.plural = Successfully set a limit of {0} users {1}
+rlal.set_rolling_limit.time.title = What time period would you like to use to limit new users?
+rlal.set_rolling_limit.time.heading = What time period would you like to use to limit new users?
+rlal.set_rolling_limit.value.title = How many new users should be added {0}?
+rlal.set_rolling_limit.value.heading = How many new users should be added {0}?
+rlal.set_rolling_limit.value.values.hint = Enter a positive whole number

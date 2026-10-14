@@ -17,9 +17,11 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms
 
 import play.api.data.Form
+import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.Aliases.Text
 import uk.gov.hmrc.govukfrontend.views.viewmodels.radios.RadioItem
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.mappings.Mappings
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.MessagesKey
 
 import scala.compiletime.summonAll
 import scala.deriving.Mirror
@@ -32,7 +34,11 @@ object RadioFormProvider extends RadioFormProvider, Mappings {
       "value" -> radio[A]()
   )
 
-  inline def options[A](using m: Mirror.SumOf[A], conversion: Conversion[A, String]): Seq[RadioItem] =
+  inline def options[A](using m: Mirror.SumOf[A], 
+                        conversion: Conversion[A, String],
+                        messageKey: MessagesKey[A],
+                        messages: Messages
+                       ): Seq[RadioItem] =
     summonAll[Tuple.Map[m.MirroredElemTypes, ValueOf]]
       .toList
       .asInstanceOf[List[ValueOf[A]]]
@@ -41,7 +47,7 @@ object RadioFormProvider extends RadioFormProvider, Mappings {
       .map{
         case (value, index) =>
           RadioItem(
-            content = Text(conversion(value)),
+            content = Text(messages(messageKey(value))),
             value   = Some(conversion(value)),
             id      = Some(s"value_$index")
           )

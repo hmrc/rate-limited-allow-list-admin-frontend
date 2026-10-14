@@ -34,7 +34,7 @@
   )
 }
 
-@layout(pageTitle = Some(messages("rlal.set_rolling_limit_time.title")), beforeContent = Some(breadcrumbs)) {
+@layout(pageTitle = Some(messages("rlal.set_rolling_limit.time.title")), beforeContent = Some(breadcrumbs)) {
 
     @formHelper(action = routes.SetRollingLimitController.onSubmit(service, allowList) ) {
         @if(form.errors.nonEmpty) {
@@ -45,7 +45,7 @@
         @govukRadios(
           RadiosViewModel(
             field  = form("value"),
-            legend = LegendViewModel(messages("rlal.set_rolling_limit_time.heading")).asPageHeading(),
+            legend = LegendViewModel(messages("rlal.set_rolling_limit.time.heading")).asPageHeading(),
             items  = options
           )
         )

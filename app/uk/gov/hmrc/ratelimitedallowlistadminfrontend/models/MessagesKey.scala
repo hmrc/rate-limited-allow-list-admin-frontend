@@ -16,28 +16,13 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
-import play.api.libs.json.{Json, OFormat}
+trait MessagesKey[A]:
+  def apply(a: A): String
 
-final case class CreateAllowListRequest(
-  feature: String,
-  userLimitPerTimeframe: Int,
-  timeframe: Timeframe,
-  userLimit: Option[Int],
-  percentageLoad: Int
-) {
-  def allowList: String = feature 
-}
-
-object CreateAllowListRequest {
-  
-  def default(allowList: String): CreateAllowListRequest =
-    CreateAllowListRequest(
-      feature = allowList,
-      timeframe = Timeframe.Weekly,
-      userLimitPerTimeframe = 0,
-      userLimit = None,
-      percentageLoad = 0
-    )
-  
-  given OFormat[CreateAllowListRequest] = Json.format
-}
+object MessagesKey:
+  def prefixWith[A](prefix: String)(using conversion: Conversion[A, String]): MessagesKey[A] =
+    a => 
+      if prefix.endsWith(".") then
+        prefix + conversion(a)
+      else
+        prefix + "." + conversion(a)

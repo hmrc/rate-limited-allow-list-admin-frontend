@@ -23,7 +23,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.BooleanFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdate
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdateRequest
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ToggleNewUserOnboardingView
 
 import javax.inject.{Inject, Singleton}
@@ -69,7 +69,7 @@ class ToggleNewUserOnboardingController @Inject()(
           },
           b =>
             connector
-              .updateAllowListConfig(service, allowList, AllowListConfigUpdate(isEnabled = Some(b)))
+              .updateAllowListConfig(service, allowList, AllowListConfigUpdateRequest.isEnabled(b))
               .map(
                 _ =>
                   val successMsg = if b then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"

@@ -36,6 +36,7 @@ import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.{AllowListLimits, TimeframeLimit}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, Done}
 
@@ -57,9 +58,10 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
     service = service,
     feature = feature,
     isEnabled = true,
-    userLimitPerTimeframe = 10,
-    timeframe = Daily,
-    userLimit = Some(100),
+    limits = AllowListLimits(
+      max = Some(100),
+      timeframe = TimeframeLimit(Daily, Some(10))
+    ),
     percentageLoad = 50,
     acceptedCounter = 125,
     created = Instant.now,

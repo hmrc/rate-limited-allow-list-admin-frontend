@@ -30,6 +30,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.http.test.WireMockSupport
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.{AllowListLimits, TimeframeLimit}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
 
 import java.time.{Instant, LocalDate}
@@ -50,9 +51,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
     service = "service-name",
     feature = "allow-list-1",
     isEnabled = true,
-    userLimitPerTimeframe = 10,
-    timeframe = Daily,
-    userLimit = Some(100),
+    limits = AllowListLimits(Some(100), TimeframeLimit(Daily, Some(10))),
     percentageLoad = 10,
     acceptedCounter = 125,
     created = Instant.now,
@@ -119,13 +118,7 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
   ".createAllowList" - {
     val url = "/rate-limited-allow-list/v2/services/service/allow-lists"
     val hc = HeaderCarrier()
-    val request = CreateAllowListRequest(
-      feature = "allow-list-name",
-      userLimitPerTimeframe = 0,
-      timeframe = Timeframe.Weekly,
-      userLimit = None,
-      percentageLoad = 0
-    )
+    val request = AllowListCreateRequest.default("allow-list-name")
 
     "must return the number of tokens when the server responds with OK" in {
       server.stubFor(
@@ -207,9 +200,8 @@ class RateLimitedAllowListConnectorSpec extends AnyFreeSpec, Matchers, GuiceOneA
     val url = s"/rate-limited-allow-list/v2/services/$serviceName/allow-lists/$allowListName"
     val hc = HeaderCarrier()
 
-    val request = AllowListConfigUpdate(
-      userLimitPerTimeframe = Some(10),
-      timeframe = Some(Daily),
+    val request = AllowListConfigUpdateRequest(
+      timeframe = Some(TimeframeLimit(Daily, Some(10))),
       userLimit = Some(100),
       percentageLoad = Some(50),
       isEnabled = Some(true)

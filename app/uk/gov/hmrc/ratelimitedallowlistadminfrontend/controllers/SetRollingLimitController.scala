@@ -24,8 +24,9 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.{IntFormProvider, RadioFormProvider}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.TimeframeLimit
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Unbounded
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdate, Timeframe}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdateRequest, Timeframe}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.{SetRollingLimitTimeView, SetRollingLimitValueView}
 
 import javax.inject.{Inject, Singleton}
@@ -43,7 +44,7 @@ class SetRollingLimitController @Inject()(
 
   private val timeframeForm = RadioFormProvider[Timeframe]
   private def userValueForm(using Messages): Form[Int] = formProviderInt(min = Some(0))
-  private val options = RadioFormProvider.options[Timeframe]
+  private def options(using Messages) = RadioFormProvider.options[Timeframe]
 
   def onPageLoad(service: String, allowList: String, timeframe: Option[Timeframe] = None): Action[AnyContent] =
     auth.authorized.admin.service(service):
@@ -67,14 +68,14 @@ class SetRollingLimitController @Inject()(
               formWithErrors =>
                 Future.successful(BadRequest(viewTime(formWithErrors, options, service, allowList))),
               {
-                case tf @ Unbounded =>
-                  val update = AllowListConfigUpdate(timeframe = Some(tf))
+                case Unbounded =>
+                  val update = AllowListConfigUpdateRequest.timeframeLimit(TimeframeLimit.unbounded)
                   connector.updateAllowListConfig(service, allowList, update)
                     .map(
                       _ => 
                         Redirect(routes.AllowListSummaryController.root(service, allowList))
                           .flashing(
-                            "rlal-notification" -> summon[Messages]("rlal.set_rolling_limit_value.flash.success.unbound")
+                            "rlal-notification" -> summon[Messages]("rlal.set_rolling_limit.flash.success.unbounded")
                         )
                     )
                   
@@ -93,13 +94,13 @@ class SetRollingLimitController @Inject()(
                 Future.successful(BadRequest(viewValue(formWithErrors, service, allowList, timeframe))),
 
               userLimit =>
-                val update = AllowListConfigUpdate(timeframe = Some(timeframe), userLimitPerTimeframe = Some(userLimit))
+                val update = AllowListConfigUpdateRequest.timeframeLimit(TimeframeLimit.bounded(timeframe, userLimit))
                 connector.updateAllowListConfig(service, allowList, update)
                   .map(
                     _ => {
                       val msg = 
-                        if userLimit == 1 then "rlal.set_rolling_limit_value.flash.success.singular"
-                        else "rlal.set_rolling_limit_value.flash.success.plural"
+                        if userLimit == 1 then "rlal.set_rolling_limit.flash.success.singular"
+                        else "rlal.set_rolling_limit.flash.success.plural"
                       Redirect(routes.AllowListSummaryController.root(service, allowList))
                         .flashing("rlal-notification" -> summon[Messages](msg, userLimit, timeframe))
                     }
