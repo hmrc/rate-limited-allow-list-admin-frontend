@@ -38,7 +38,7 @@ import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBeh
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, AllowListReport}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
 
 import java.time.Instant
@@ -59,9 +59,16 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     isEnabled = true,
     limits = AllowListLimits(Some(100), TimeframeLimit(Daily, Some(10))),
     percentageLoad = 50,
-    acceptedCounter = 125,
+    acceptedCounter = 9,
     created = Instant.now,
     lastUpdated = Instant.now
+  )
+
+  val allowListReport = AllowListReport(
+    service = service,
+    feature = allowList,
+    currentUserCount = 125,
+    report = Seq.empty
   )
 
   override def fakeApplication(): Application =
@@ -110,6 +117,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     "must display the page when the user is authorised and there are features for the service" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(true))
       when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(Some(allowListConfig)))
+      when(mockConnector.getAllowListReport(any(), any())(using any())).thenReturn(Future.successful(Some(allowListReport)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -129,7 +137,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
 
       val currentUserRow :: userPercentage :: rollingUser :: totalUsers :: Nil = userSummaryRows.asScala.toList : @unchecked
 
-      currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.acceptedCounter.toString)
+      currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(allowListReport.currentUserCount.toString)
       currentUserRow.getElementsByClass("govuk-summary-list__actions-list-item").size() mustEqual 0
 
       userPercentage.getElementsByClass("govuk-summary-list__value").text() must include("50%")
@@ -173,6 +181,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     "must display the page when the user is authorised and the feature is not found" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(true))
       when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(None))
+      when(mockConnector.getAllowListReport(any(), any())(using any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -207,6 +216,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     "must display the page when the user is authorised and there are features for the service" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
       when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(Some(allowListConfig)))
+      when(mockConnector.getAllowListReport(any(), any())(using any())).thenReturn(Future.successful(Some(allowListReport)))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
@@ -226,7 +236,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
 
       val currentUserRow :: userPercentage :: rollingUser :: totalUsers :: Nil = userSummaryRows.asScala.toList : @unchecked
 
-      currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.acceptedCounter.toString)
+      currentUserRow.getElementsByClass("govuk-summary-list__value").text() must include(allowListReport.currentUserCount.toString)
       currentUserRow.getElementsByClass("govuk-summary-list__actions-list-item").size() mustEqual 0
 
       userPercentage.getElementsByClass("govuk-summary-list__value").text() must include("50%")
@@ -262,6 +272,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     "must display the page when the user is authorised and the feature is not found" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
       when(mockConnector.getAllowList(any(), any())(using any())).thenReturn(Future.successful(None))
+      when(mockConnector.getAllowListReport(any(), any())(using any())).thenReturn(Future.successful(None))
 
       val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
 
