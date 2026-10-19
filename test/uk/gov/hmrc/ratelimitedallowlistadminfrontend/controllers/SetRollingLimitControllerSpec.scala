@@ -38,7 +38,8 @@ import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBeh
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.{Daily, Unbounded}
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdate, Done}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.TimeframeLimit
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -77,7 +78,7 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
     super.beforeEach()
     Mockito.reset(stubBehaviour, mockConnector)
 
-  def routeWithAuthorizationChecks(endpoint: Call) = {
+  def routeWithAuthorizationChecks(endpoint: Call): Unit = {
     "must show the user an unauthorized screen when they are authenticated but do not have access" in {
       when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
 
@@ -93,7 +94,7 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
     }
   }
 
-  def routeWithAuthenticationChecks(endpoint: Call) = {
+  def routeWithAuthenticationChecks(endpoint: Call): Unit = {
     "must fail when the user is not authenticated (no auth token)" in {
       val request = FakeRequest(endpoint)
       val result = route(app, request).value
@@ -135,11 +136,16 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
     "POST" should {
       "redirect when the value is `Unbounded` and submission is successful" in {
         val value = Unbounded
+        val expectedUpdate = AllowListConfigUpdateRequest(
+          limits = Some(AllowListLimitsUpdateRequest(None, Some(TimeframeLimit(Unbounded, None)))),
+          percentageLoad = None,
+          isEnabled = None
+        )
 
         when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
         when(
-          mockConnector.updateAllowListConfig(any(), any(), eqTo(AllowListConfigUpdate(timeframe = Some(value))
-          ))(using any())).thenReturn(Future.successful(Done))
+          mockConnector.updateAllowListConfig(any(), any(), eqTo(expectedUpdate))(using any())
+        ).thenReturn(Future.successful(Done))
 
         val request = FakeRequest(onSubmitNone)
           .withSession("authToken" -> "Token some-token")
@@ -151,20 +157,15 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
         redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
 
         val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-        flash(result).get("rlal-notification").value mustEqual messages("rlal.set_rolling_limit_value.flash.success.unbound", feature)
+        flash(result).get("rlal-notification").value mustEqual messages("rlal.set_rolling_limit.flash.success.unbounded", feature)
       }
 
       "redirect to additional pages when the value is not `Unbounded` and submission is successful" in {
-        val value = Daily
-
         when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
-        when(
-          mockConnector.updateAllowListConfig(any(), any(), eqTo(AllowListConfigUpdate(timeframe = Some(value))
-          ))(using any())).thenReturn(Future.successful(Done))
 
         val request = FakeRequest(onSubmitNone)
           .withSession("authToken" -> "Token some-token")
-          .withFormUrlEncodedBody("value" -> value.toString)
+          .withFormUrlEncodedBody("value" -> Daily.value)
 
         val result = route(app, request).value
 
@@ -235,11 +236,15 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
     "POST" should {
       "redirect when submission is successful" in {
         val value = 10
-        val update = AllowListConfigUpdate(timeframe = Some(Daily), userLimitPerTimeframe = Some(value))
+        val expectedRequest = AllowListConfigUpdateRequest(
+          limits = Some(AllowListLimitsUpdateRequest(None, Some(TimeframeLimit(Daily, Some(value))))),
+          percentageLoad = None,
+          isEnabled = None
+        )
 
         when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(retrievalResult))
         when(
-          mockConnector.updateAllowListConfig(any(), any(), eqTo(update))(using any())
+          mockConnector.updateAllowListConfig(any(), any(), eqTo(expectedRequest))(using any())
         ).thenReturn(Future.successful(Done))
 
         val request = FakeRequest(onSubmitDaily)
@@ -252,7 +257,7 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
         redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
 
         val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
-        flash(result).get("rlal-notification").value mustEqual messages("rlal.set_rolling_limit_value.flash.success.plural", value, Daily.value)
+        flash(result).get("rlal-notification").value mustEqual messages("rlal.set_rolling_limit.flash.success.plural", value, Daily.value)
       }
 
       "redirect to fist page when the timeframe is unbounded" in {

@@ -53,7 +53,7 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
 
   def createAllowList(service: String, allowList: String)(using HeaderCarrier): Future[Done] =
     httpClient.post(url"$rateLimitedAllowListService/rate-limited-allow-list/v2/services/$service/allow-lists")
-      .withBody(Json.toJson(CreateAllowListRequest.default(allowList)))
+      .withBody(Json.toJson(AllowListCreateRequest.default(allowList)))
       .execute[HttpResponse]
       .flatMap { response =>
         response.status match {
@@ -64,7 +64,7 @@ class RateLimitedAllowListConnector @Inject()(configuration: Configuration,
         }
       }
 
-  def updateAllowListConfig(service: String, allowList: String, update: AllowListConfigUpdate)(using HeaderCarrier): Future[Done] = {
+  def updateAllowListConfig(service: String, allowList: String, update: AllowListConfigUpdateRequest)(using HeaderCarrier): Future[Done] = {
     httpClient.patch(url"$rateLimitedAllowListService/rate-limited-allow-list/v2/services/$service/allow-lists/$allowList")
       .withBody(Json.toJson(update))
       .execute[HttpResponse]

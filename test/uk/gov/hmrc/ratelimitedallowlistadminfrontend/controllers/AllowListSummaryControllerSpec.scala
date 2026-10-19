@@ -39,6 +39,7 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllow
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -56,9 +57,7 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     service = service,
     feature = allowList,
     isEnabled = true,
-    userLimitPerTimeframe = 10,
-    timeframe = Daily,
-    userLimit = Some(100),
+    limits = AllowListLimits(Some(100), TimeframeLimit(Daily, Some(10))),
     percentageLoad = 50,
     acceptedCounter = 125,
     created = Instant.now,
@@ -138,13 +137,13 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
       userPercentageActions.size() mustEqual 1
       userPercentageActions.get(0).text() must include("Change")
 
-      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.userLimitPerTimeframe.toString)
-      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.timeframe.toString)
+      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.limits.timeframe.bound.value)
+      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.limits.timeframe.max.get.toString)
       val rollingUserActions = rollingUser.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
       rollingUserActions.size() mustEqual 1
       rollingUserActions.get(0).text() must include("Change")
 
-      totalUsers.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.userLimit.get.toString)
+      totalUsers.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.limits.max.get.toString)
       val totalUsersActions = totalUsers.getElementsByClass("govuk-summary-list__actions").get(0).getElementsByTag("a")
       totalUsersActions.size() mustEqual 1
       totalUsersActions.get(0).text() must include("Change")
@@ -233,11 +232,11 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
       userPercentage.getElementsByClass("govuk-summary-list__value").text() must include("50%")
       userPercentage.getElementsByClass("govuk-summary-list__actions").size() mustEqual 0
 
-      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.userLimitPerTimeframe.toString)
-      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.timeframe.toString)
+      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.limits.timeframe.bound.value)
+      rollingUser.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.limits.timeframe.max.get.toString)
       rollingUser.getElementsByClass("govuk-summary-list__actions").size() mustEqual 0
 
-      totalUsers.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.userLimit.get.toString)
+      totalUsers.getElementsByClass("govuk-summary-list__value").text() must include(allowListConfig.limits.max.get.toString)
       totalUsers.getElementsByClass("govuk-summary-list__actions").size() mustEqual 0
 
       // summary list 2 should display times

@@ -16,10 +16,13 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels
 
+import play.api.Logging
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, UserMode}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Unbounded
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.given
 
@@ -36,7 +39,7 @@ case class AllowListSummaryViewModel(
   settings: SummaryList
 )
 
-object AllowListSummaryViewModel:
+object AllowListSummaryViewModel extends Logging:
 
   private val formatterDate = DateTimeFormatter
     .ofPattern("h:mm a z, EEEE dd MMMM, yyyy", Locale.ENGLISH)
@@ -51,14 +54,14 @@ object AllowListSummaryViewModel:
       service,
       allowList,
       isEnabled,
-      userLimitPerTimeframe,
-      timeframe,
-      userLimit,
+      limits,
       percentageLoad,
       acceptedCounter,
       created,
       lastUpdated
     ) = allowListConfig
+
+    val AllowListLimits(userLimit, timeframe) = limits
 
     val (statusMsg, statusActionMsg) = if isEnabled then
       (
@@ -70,6 +73,37 @@ object AllowListSummaryViewModel:
         "rlal.allow_list_summary.allowList.onboardingStatus.value.Paused",
         "rlal.allow_list_summary.allowList.onboardingStatus.action.Paused"
       )
+
+    val userLimitRow = { 
+      val value = timeframe match {
+        case TimeframeLimit(Unbounded, _) =>
+          ValueViewModel(messages("rlal.allow_list_summary.users.userTimeLimit.unbounded"))
+          
+        case TimeframeLimit(bound, Some(1)) =>
+          ValueViewModel(messages("rlal.allow_list_summary.users.userTimeLimit.value.singular", 1, bound.value))
+          
+        case TimeframeLimit(bound, Some(max)) =>
+          ValueViewModel(messages("rlal.allow_list_summary.users.userTimeLimit.value.plural", max, bound.value))
+ 
+        case TimeframeLimit(bound, None) =>
+          val msg = s"Timeframe $bound has not max value"
+          logger.error(msg)
+          throw new IllegalStateException(msg)
+      }
+      
+      SummaryListRowViewModel(
+        "rlal.allow_list_summary.users.userTimeLimit.label",
+        value,
+        Option.when(userMode.isAdmin)(
+          ActionItemViewModel(
+            "rlal.allow_list_summary.users.userTimeLimit.action",
+            routes.SetRollingLimitController.onPageLoad(service, allowList).url
+          ).withVisuallyHiddenText(
+            messages("rlal.allow_list_summary.users.userTimeLimit.action.visuallyHidden", timeframe)
+          )
+        ).toList
+      )
+    }
 
     val userSummary = SummaryListViewModel(
       List(
@@ -89,31 +123,7 @@ object AllowListSummaryViewModel:
             )
           ).toList
         ),
-        SummaryListRowViewModel(
-          "rlal.allow_list_summary.users.userTimeLimit.label",
-          ValueViewModel(
-            if userLimitPerTimeframe == 1 then
-              messages(
-                "rlal.allow_list_summary.users.userTimeLimit.singular.value",
-                userLimitPerTimeframe,
-                timeframe
-              )
-            else
-              messages(
-                "rlal.allow_list_summary.users.userTimeLimit.plural.value",
-                userLimitPerTimeframe,
-                timeframe
-              )
-          ),
-          Option.when(userMode.isAdmin)(
-            ActionItemViewModel(
-              "rlal.allow_list_summary.users.userTimeLimit.action",
-              routes.SetRollingLimitController.onPageLoad(service, allowList).url
-            ).withVisuallyHiddenText(
-              messages("rlal.allow_list_summary.users.userTimeLimit.action.visuallyHidden", timeframe)
-            )
-          ).toList
-        ),
+        userLimitRow,
         SummaryListRowViewModel(
           "rlal.allow_list_summary.users.totalUserLimit.label",
           ValueViewModel(

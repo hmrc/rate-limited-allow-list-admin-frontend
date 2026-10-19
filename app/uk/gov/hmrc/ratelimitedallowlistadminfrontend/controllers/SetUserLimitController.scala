@@ -24,7 +24,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdate
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdateRequest
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SetUserLimitView
 
 import javax.inject.{Inject, Singleton}
@@ -57,7 +57,7 @@ class SetUserLimitController @Inject()(
           },
           userLimit => 
             connector
-              .updateAllowListConfig(service, allowList, AllowListConfigUpdate(userLimit = Some(userLimit)))
+              .updateAllowListConfig(service, allowList, AllowListConfigUpdateRequest.maxUsers(userLimit))
               .map( 
                 _ => Redirect(routes.AllowListSummaryController.root(service, allowList))
                   .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", allowList))

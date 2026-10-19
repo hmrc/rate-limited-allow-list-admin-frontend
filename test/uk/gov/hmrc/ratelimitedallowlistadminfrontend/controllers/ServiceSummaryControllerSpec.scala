@@ -39,6 +39,7 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllow
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -57,9 +58,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     service = service,
     feature = allowList1,
     isEnabled = true,
-    userLimitPerTimeframe = 10,
-    timeframe = Daily,
-    userLimit = Some(100),
+    limits = AllowListLimits(max = Some(100), timeframe = TimeframeLimit(Daily, Some(10))),
     percentageLoad = 10,
     acceptedCounter = 125,
     created = Instant.now,

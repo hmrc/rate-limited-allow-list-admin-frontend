@@ -34,7 +34,7 @@
   )
 }
 
-@layout(pageTitle = Some(messages("rlal.set_rolling_limit_value.title")), beforeContent = Some(breadcrumbs)) {
+@layout(pageTitle = Some(messages("rlal.set_rolling_limit.value.title")), beforeContent = Some(breadcrumbs)) {
 
     @formHelper(action = routes.SetRollingLimitController.onSubmit(service, allowList, Some(timeframe)) ) {
         @if(form.errors.nonEmpty) {
@@ -45,7 +45,7 @@
         @govukInput(
             InputViewModel(
                 field = form("value"),
-                label = LabelViewModel(messages("rlal.set_rolling_limit_value.heading", timeframe.toString)).asPageHeading()
+                label = LabelViewModel(messages("rlal.set_rolling_limit.value.heading", timeframe.toString)).asPageHeading()
             ).withWidth(InputWidth.Full)
         )
 

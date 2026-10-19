@@ -18,6 +18,7 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
 import play.api.libs.json.{Format, JsError, JsString, JsSuccess, Reads, Writes}
 import play.api.mvc.QueryStringBindable
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.MessagesKey
 
 enum Timeframe(final val value: String) {
   case Hourly    extends Timeframe("hourly")
@@ -33,6 +34,7 @@ enum Timeframe(final val value: String) {
 object Timeframe:
   
   given Conversion[Timeframe, String] = _.value
+  given MessagesKey[Timeframe] = MessagesKey.prefixWith("models.Timeframe")
   
   given QueryStringBindable[Option[Timeframe]] = new QueryStringBindable[Option[Timeframe]] {
     override def bind(key: String, params: Map[String, Seq[String]]): Option[Either[String, Option[Timeframe]]] =
