@@ -64,13 +64,14 @@ class AllowListSummaryController @Inject()(
   private def onPageLoad(service: String, allowList: String, mode: UserMode)(using request: UserRequest[?]): Future[Result] =
     for
       allowListConfigOpt <- connector.getAllowList(service, allowList)
+      reportOpt <- connector.getAllowListReport(service, allowList)
     yield
-      allowListConfigOpt match
-        case Some(metadata) =>
-          val vm = AllowListSummaryViewModel(metadata,  mode)
+      (allowListConfigOpt, reportOpt) match
+        case (Some(metadata), Some(report)) =>
+          val vm = AllowListSummaryViewModel(metadata, report,  mode)
           Ok(view(service, allowList, Some(vm)))
 
-        case None =>
-          logger.error(s"No configuration found for service $service and allow list $allowList")
+        case _ =>
+          logger.error(s"No configuration found for service $service and allow list $allowList, allowListConfigOpt=$allowListConfigOpt reportOpt=$reportOpt")
           Ok(view(service, allowList, None))
 }

@@ -20,7 +20,7 @@ import play.api.Logging
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, UserMode}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, AllowListReport, UserMode}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Unbounded
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
@@ -49,17 +49,19 @@ object AllowListSummaryViewModel extends Logging:
     def dateTimeStr: String = formatterDate.format(i)
   }
 
-  def apply(allowListConfig: AllowListConfiguration, userMode: UserMode)(using messages: Messages): AllowListSummaryViewModel = {
+  def apply(allowListConfig: AllowListConfiguration, report: AllowListReport, userMode: UserMode)(using messages: Messages): AllowListSummaryViewModel = {
     val AllowListConfiguration(
       service,
       allowList,
       isEnabled,
       limits,
       percentageLoad,
-      acceptedCounter,
+      _,
       created,
       lastUpdated
     ) = allowListConfig
+    
+    val acceptedCounter = report.currentUserCount
 
     val AllowListLimits(userLimit, timeframe) = limits
 
