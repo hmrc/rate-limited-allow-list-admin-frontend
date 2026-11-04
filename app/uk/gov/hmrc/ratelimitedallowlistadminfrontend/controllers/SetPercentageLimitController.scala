@@ -19,10 +19,10 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AuthActions, UserRequest}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.IntFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfigUpdateRequest
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SetPercentageLimitView
@@ -44,13 +44,13 @@ class SetPercentageLimitController @Inject()(
   def onPageLoad(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service):
       request =>
-        given Request[?] = request
+        given UserRequest[?] = request
         Ok(view(form, service, allowList))
 
   def onSubmit(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
-        given Request[?] = request
+        given UserRequest[?] = request
         form.bindFromRequest().fold(
           formWithErrors => {
             Future.successful(BadRequest(view(formWithErrors, service, allowList)))
@@ -59,7 +59,7 @@ class SetPercentageLimitController @Inject()(
             connector
               .updateAllowListConfig(service, allowList, AllowListConfigUpdateRequest.percentage(percentage))
               .map( 
-                _ => Redirect(routes.AllowListSummaryController.root(service, allowList))
+                _ => Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
                   .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", allowList))
               )
         )

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
-import play.api.libs.json.{Format, JsError, JsString, JsSuccess, Reads, Writes}
+import play.api.libs.json.*
 import play.api.mvc.QueryStringBindable
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.MessagesKey
 

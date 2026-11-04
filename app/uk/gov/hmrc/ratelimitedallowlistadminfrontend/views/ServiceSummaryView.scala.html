@@ -16,7 +16,7 @@
 
 @this(layout: Layout, govukBreadcrumbs: GovukBreadcrumbs)
 
-@(service: String, vm: ServiceSummaryViewModel)(implicit request: Request[_], messages: Messages)
+@(service: String, vm: ServiceSummaryViewModel, mode: UserMode)(implicit request: UserRequest[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(crumb.home > crumb.current("rlal.service_summary.breadcrumb", service))
@@ -33,7 +33,7 @@
             @vm.running.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@routes.AllowListSummaryController.root(service, allowListName)"
+                       href="@routes.AllowListSummaryController.root(service, allowListName, mode)"
                     >@allowListName</a>
                 </li>
             }
@@ -49,7 +49,7 @@
             @vm.paused.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@routes.AllowListSummaryController.root(service, allowListName)"
+                       href="@routes.AllowListSummaryController.root(service, allowListName, mode)"
                     >@allowListName</a>
                 </li>
             }

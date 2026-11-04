@@ -23,13 +23,13 @@
     govukBreadcrumbs: GovukBreadcrumbs
 )
 
-@(form: Form[_], allowListConfig: AllowListConfiguration)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], allowListConfig: AllowListConfiguration)(implicit request: UserRequest[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(
     crumb.home >
-      crumb.page("rlal.service_summary.breadcrumb", allowListConfig.service)(routes.ServiceSummaryController.onPageLoad(allowListConfig.service)) >
-      crumb.page("rlal.allow_list_summary.breadcrumb", allowListConfig.allowList)(routes.AllowListSummaryController.root(allowListConfig.service, allowListConfig.allowList)) >
+      crumb.page("rlal.service_summary.breadcrumb", allowListConfig.service)(routes.ServiceSummaryController.onPageLoad(allowListConfig.service, request.userMode)) >
+      crumb.page("rlal.allow_list_summary.breadcrumb", allowListConfig.allowList)(routes.AllowListSummaryController.manage(allowListConfig.service, allowListConfig.allowList)) >
       crumb.current("rlal.toggle.breadcrumb")
   )
 }

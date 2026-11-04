@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
+import play.api.mvc.PathBindable
+
 enum UserMode {
   case Admin, ReadOnly
   
@@ -25,4 +27,16 @@ enum UserMode {
 
 object UserMode {
   def apply(isAdmin: Boolean): UserMode = if isAdmin then Admin else ReadOnly
+
+  given PathBindable[UserMode] = PathBindable.Parsing[UserMode](
+    {
+      case "manage" => Admin
+      case "view" => ReadOnly
+    },
+    {
+      case Admin => "manage"
+      case ReadOnly => "view"
+    },
+    (msg, _) => s"Cannot parse parameter $msg as UserMode: expected 'manage' or 'view'"
+  )
 }

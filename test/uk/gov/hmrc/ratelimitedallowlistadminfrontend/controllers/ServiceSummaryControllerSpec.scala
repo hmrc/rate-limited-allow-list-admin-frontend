@@ -40,6 +40,7 @@ import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode.Admin
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -82,7 +83,7 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     super.beforeEach()
     Mockito.reset(stubBehaviour)
 
-  private def url: Call = routes.ServiceSummaryController.onPageLoad(service)
+  private def url: Call = routes.ServiceSummaryController.onPageLoad(service, Admin)
 
   "GET /" should {
     "must display the page" when {

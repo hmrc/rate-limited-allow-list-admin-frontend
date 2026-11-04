@@ -116,7 +116,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("error.flash.allow_list_not_found", service, feature)
@@ -160,7 +160,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.toggle.flash.success.paused", feature)
@@ -192,7 +192,7 @@ class ToggleNewUserOnboardingControllerSpec extends AnyWordSpec, Matchers, Guice
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, feature).url
 
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("error.flash.allow_list_not_found", service, feature)

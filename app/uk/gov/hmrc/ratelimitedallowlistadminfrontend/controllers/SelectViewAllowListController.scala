@@ -27,6 +27,7 @@ import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode.ReadOnly
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.SelectViewAllowListView
 
 import javax.inject.{Inject, Singleton}
@@ -95,7 +96,7 @@ class SelectViewAllowListController @Inject()(
             formWithErrors => BadRequest(view(formWithErrors, vm)),
             selection =>
               if services.contains(selection) then
-                  Redirect(routes.ServiceSummaryController.onPageLoad(selection))
+                  Redirect(routes.ServiceSummaryController.onPageLoad(selection, ReadOnly))
               else
                 val formWithErrors = submittedForm.withError("value", "rlal.selectcreate.heading")
                 BadRequest(view(formWithErrors, vm))

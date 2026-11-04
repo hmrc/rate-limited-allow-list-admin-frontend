@@ -87,30 +87,6 @@ class AllowListSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppP
     super.beforeEach()
     Mockito.reset(stubBehaviour, mockConnector)
 
-  "GET /" should {
-    "when user is an admin for the service, redirect user to the manage endpoint" in {
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(true))
-
-      val request = FakeRequest(routes.AllowListSummaryController.root(service, allowList))
-        .withSession("authToken" -> "Token some-token")
-
-      val result = route(app, request).value
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, allowList).url
-    }
-
-    "when user is not an admin for the service, redirect user to the view endpoint" in {
-      when(stubBehaviour.stubAuth(any(), any())).thenReturn(Future.successful(false))
-
-      val request = FakeRequest(routes.AllowListSummaryController.root(service, allowList))
-        .withSession("authToken" -> "Token some-token")
-
-      val result = route(app, request).value
-      status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.view(service, allowList).url
-    }
-  }
-
   "GET /manage when user is an admin" should {
     def url = routes.AllowListSummaryController.manage(service, allowList)
 

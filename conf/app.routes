@@ -5,18 +5,6 @@ GET        /assets/*file                            controllers.Assets.versioned
 
 GET   /                                             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.IndexController.onPageLoad()
 
-################################
-# View an allow list or service
-################################
-
-GET   /view/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onPageLoad()
-POST  /view/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onSubmit()
-
-GET   /view/services/:service                               uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ServiceSummaryController.onPageLoad(service)
-
-GET   /view/services/:service/allow-lists/:allowList        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.view(service, allowList)
-
-GET   /services/:service/allow-lists/:allowList             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList)
 
 
 ########################
@@ -36,6 +24,24 @@ POST  /manage/services/:service/allow-lists/:allowList/set-percentage           
 
 GET   /manage/services/:service/allow-lists/:allowList/change-rolling-limit         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetRollingLimitController.onPageLoad(service, allowList, timeframe: Option[Timeframe] ?= None)
 POST  /manage/services/:service/allow-lists/:allowList/change-rolling-limit         uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SetRollingLimitController.onSubmit(service, allowList, timeframe: Option[Timeframe] ?= None)
+
+################################
+# Dynamic Manage and View routes
+################################
+GET   /:mode/services/:service                               uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.ServiceSummaryController.onPageLoad(service, mode: UserMode)
+
+################################
+# View an allow list or service
+################################
+
+GET   /view/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onPageLoad()
+POST  /view/select-a-service                                uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.SelectViewAllowListController.onSubmit()
+
+
+GET   /view/services/:service/allow-lists/:allowList        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.view(service, allowList)
+
+# This URL is added for the reverse routes, it will not be reachable via request since the manage or view routes will match first
+GET   /:mode/services/:service/allow-lists/:allowList             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList, mode: UserMode)
 
 ########################
 # Create an allow list

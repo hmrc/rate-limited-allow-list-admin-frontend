@@ -22,8 +22,8 @@ import play.twirl.api.Html
 import uk.gov.hmrc.play.bootstrap.frontend.http.FrontendErrorHandler
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ErrorTemplate
 
-import scala.concurrent.{ExecutionContext, Future}
 import javax.inject.{Inject, Singleton}
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ErrorHandler @Inject()(

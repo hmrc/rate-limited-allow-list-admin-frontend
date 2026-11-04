@@ -18,10 +18,11 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
 import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AuthActions, UserRequest}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.ServiceSummaryViewModel
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.ServiceSummaryView
 
@@ -36,14 +37,14 @@ class ServiceSummaryController @Inject()(
                                           view: ServiceSummaryView
                                         )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging:
  
-  def onPageLoad(service: String): Action[AnyContent] =
+  def onPageLoad(service: String, mode: UserMode): Action[AnyContent] =
     auth.authorized.service(service).async {
       request =>
-        given Request[?] = request
+        given UserRequest[?] = request
         for
           summaries <- connector.getAllowLists(service)
         yield
           val vm = ServiceSummaryViewModel(summaries)
-          if (summaries.nonEmpty) then Ok(view(service, vm))
-          else NotFound(view(service, vm))
+          if summaries.nonEmpty then Ok(view(service, vm, mode))
+          else NotFound(view(service, vm, mode))
     }

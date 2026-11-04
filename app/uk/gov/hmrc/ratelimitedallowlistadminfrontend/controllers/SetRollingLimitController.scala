@@ -19,10 +19,10 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.Logging
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AuthActions, UserRequest}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.{IntFormProvider, RadioFormProvider}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.TimeframeLimit
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Unbounded
@@ -49,7 +49,7 @@ class SetRollingLimitController @Inject()(
   def onPageLoad(service: String, allowList: String, timeframe: Option[Timeframe] = None): Action[AnyContent] =
     auth.authorized.admin.service(service):
       request =>
-        given Request[?] = request
+        given UserRequest[?] = request
 
         timeframe match {
           case None => Ok(viewTime(timeframeForm, options, service, allowList))
@@ -60,7 +60,7 @@ class SetRollingLimitController @Inject()(
   def onSubmit(service: String, allowList: String, timeFrame: Option[Timeframe]): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
-        given Request[?] = request
+        given UserRequest[?] = request
 
         timeFrame match {
           case None =>
@@ -73,7 +73,7 @@ class SetRollingLimitController @Inject()(
                   connector.updateAllowListConfig(service, allowList, update)
                     .map(
                       _ => 
-                        Redirect(routes.AllowListSummaryController.root(service, allowList))
+                        Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
                           .flashing(
                             "rlal-notification" -> summon[Messages]("rlal.set_rolling_limit.flash.success.unbounded")
                         )
@@ -101,7 +101,7 @@ class SetRollingLimitController @Inject()(
                       val msg = 
                         if userLimit == 1 then "rlal.set_rolling_limit.flash.success.singular"
                         else "rlal.set_rolling_limit.flash.success.plural"
-                      Redirect(routes.AllowListSummaryController.root(service, allowList))
+                      Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
                         .flashing("rlal-notification" -> summon[Messages](msg, userLimit, timeframe))
                     }
                   )

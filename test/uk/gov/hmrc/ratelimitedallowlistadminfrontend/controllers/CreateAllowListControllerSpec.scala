@@ -37,6 +37,7 @@ import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBeh
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Done
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode.Admin
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -125,7 +126,7 @@ class CreateAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, allowList).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, allowList, Admin).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.create_allow_list.flash.success", service, allowList)

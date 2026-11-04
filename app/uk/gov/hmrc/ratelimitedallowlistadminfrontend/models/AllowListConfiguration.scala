@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 
-import play.api.libs.json.{JsError, JsString, Json, OFormat, Reads, Writes, __}
 import play.api.libs.functional.syntax.*
+import play.api.libs.json.*
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.AllowListLimits
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.{Daily, Hourly, Unbounded, Weekdaily, Weekly}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.*
 
 import java.time.Instant
 

@@ -20,11 +20,11 @@ import play.api.Logging
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, AllowListReport, UserMode}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Unbounded
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, AllowListReport, UserMode}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.given
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.viewmodels.helpers.summarylist.*
 
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
