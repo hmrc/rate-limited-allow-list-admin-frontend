@@ -59,7 +59,7 @@ class SetPercentageLimitController @Inject()(
             connector
               .updateAllowListConfig(service, allowList, AllowListConfigUpdateRequest.percentage(percentage))
               .map( 
-                _ => Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
+                _ => Redirect(routes.AllowListSummaryController.manage(service, allowList))
                   .flashing("rlal-notification" -> summon[Messages]("rlal.set_user_limit.flash.success", allowList))
               )
         )

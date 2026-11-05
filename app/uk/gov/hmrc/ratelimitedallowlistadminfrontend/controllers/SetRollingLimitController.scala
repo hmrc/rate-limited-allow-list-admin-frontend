@@ -73,7 +73,7 @@ class SetRollingLimitController @Inject()(
                   connector.updateAllowListConfig(service, allowList, update)
                     .map(
                       _ => 
-                        Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
+                        Redirect(routes.AllowListSummaryController.manage(service, allowList))
                           .flashing(
                             "rlal-notification" -> summon[Messages]("rlal.set_rolling_limit.flash.success.unbounded")
                         )
@@ -101,7 +101,7 @@ class SetRollingLimitController @Inject()(
                       val msg = 
                         if userLimit == 1 then "rlal.set_rolling_limit.flash.success.singular"
                         else "rlal.set_rolling_limit.flash.success.plural"
-                      Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
+                      Redirect(routes.AllowListSummaryController.manage(service, allowList))
                         .flashing("rlal-notification" -> summon[Messages](msg, userLimit, timeframe))
                     }
                   )

@@ -56,7 +56,7 @@ class CreateAllowListController @Inject()(
             Future.successful(BadRequest(view(formWithErrors, service)))
           },
           allowList => connector.createAllowList(service, allowList).map(
-            _ => Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
+            _ => Redirect(routes.AllowListSummaryController.manage(service, allowList))
               .flashing("rlal-notification" -> summon[Messages]("rlal.create_allow_list.flash.success", service, allowList))
           )
         )

@@ -22,6 +22,13 @@
   @govukBreadcrumbs(crumb.home > crumb.current("rlal.service_summary.breadcrumb", service))
 }
 
+@allowListRoute()={
+  mode match {
+    case UserMode.Admin => routes.AllowListSummaryController.manage(service, allowListName)
+    case UserMode.ReadOnly => routes.AllowListSummaryController.view(service, allowListName)
+  }
+}
+
 @layout(pageTitle = Some(messages("rlal.service_summary.title", service)), beforeContent = Some(breadcrumbs)) {
 
     <span class="govuk-caption-l">@service</span>
@@ -33,7 +40,7 @@
             @vm.running.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@routes.AllowListSummaryController.root(service, allowListName, mode)"
+                       href="@allowListRoute()"
                     >@allowListName</a>
                 </li>
             }
@@ -49,7 +56,7 @@
             @vm.paused.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@routes.AllowListSummaryController.root(service, allowListName, mode)"
+                       href="@allowListRoute()"
                     >@allowListName</a>
                 </li>
             }

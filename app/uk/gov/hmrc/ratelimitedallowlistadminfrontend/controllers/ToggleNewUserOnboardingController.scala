@@ -49,7 +49,7 @@ class ToggleNewUserOnboardingController @Inject()(
             case Some(allowListConfig) =>
               Ok(view(formProvider().fill(!allowListConfig.isEnabled), allowListConfig))
             case None =>
-              Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
+              Redirect(routes.AllowListSummaryController.manage(service, allowList))
                 .flashing("rlal-notification" -> summon[Messages]("error.flash.allow_list_not_found", service, allowList))
 
 
@@ -63,7 +63,7 @@ class ToggleNewUserOnboardingController @Inject()(
               case Some(allowListConfig) =>
                 BadRequest(view(formWithErrors.fill(!allowListConfig.isEnabled), allowListConfig))
               case None =>
-                Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
+                Redirect(routes.AllowListSummaryController.manage(service, allowList))
                 .flashing("rlal-notification" -> summon[Messages]("error.flash.allow_list_not_found", service, allowList))
             }
           },
@@ -73,7 +73,7 @@ class ToggleNewUserOnboardingController @Inject()(
               .map(
                 _ =>
                   val successMsg = if b then "rlal.toggle.flash.success.resumed" else "rlal.toggle.flash.success.paused"
-                  Redirect(routes.AllowListSummaryController.root(service, allowList, request.userMode))
+                  Redirect(routes.AllowListSummaryController.manage(service, allowList))
                     .flashing("rlal-notification" -> summon[Messages](successMsg, allowList))
               )
         )

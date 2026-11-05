@@ -36,7 +36,6 @@ import uk.gov.hmrc.internalauth.client.FrontendAuthComponents
 import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBehaviour}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode.Admin
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfigUpdateRequest, Done}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -131,7 +130,7 @@ class SetPercentageLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAp
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature, Admin).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.set_user_limit.flash.success", feature)

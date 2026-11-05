@@ -40,9 +40,6 @@ POST  /view/select-a-service                                uk.gov.hmrc.ratelimi
 
 GET   /view/services/:service/allow-lists/:allowList        uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.view(service, allowList)
 
-# This URL is added for the reverse routes, it will not be reachable via request since the manage or view routes will match first
-GET   /:mode/services/:service/allow-lists/:allowList             uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.AllowListSummaryController.root(service, allowList, mode: UserMode)
-
 ########################
 # Create an allow list
 ########################
