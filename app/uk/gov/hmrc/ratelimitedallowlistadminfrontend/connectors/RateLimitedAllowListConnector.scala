@@ -16,15 +16,14 @@
 
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors
 
-import play.api.{Configuration, Logging}
 import play.api.http.Status.{CREATED, NOT_FOUND, NO_CONTENT, OK}
 import play.api.libs.json.{Json, Reads}
 import play.api.libs.ws.writeableOf_JsValue
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import uk.gov.hmrc.http.client.HttpClientV2
-import uk.gov.hmrc.http.HttpReads
-import uk.gov.hmrc.http.HttpReads.Implicits.*
+import play.api.{Configuration, Logging}
+import uk.gov.hmrc.http.HttpReads.Implicits.given
 import uk.gov.hmrc.http.HttpReads.Implicits.readRaw
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, StringContextOps}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.config.Service
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector.UnexpectedResponseException
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.*

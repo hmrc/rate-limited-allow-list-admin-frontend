@@ -20,12 +20,12 @@
       govukSummaryList: GovukSummaryList,
 )
 
-@(service: String, allowList: String, vm: Option[AllowListSummaryViewModel])(implicit request: Request[_], messages: Messages)
+@(service: String, allowList: String, vm: Option[AllowListSummaryViewModel], mode: UserMode)(implicit request: Request[_], messages: Messages)
 
 @breadcrumbs = {
   @govukBreadcrumbs(
     crumb.home >
-      crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service)) >
+      crumb.page("rlal.service_summary.breadcrumb", service)(routes.ServiceSummaryController.onPageLoad(service, mode)) >
       crumb.current("rlal.allow_list_summary.breadcrumb", allowList)
   )
 }

@@ -18,8 +18,8 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions
 
 import play.api.Logging
 import play.api.i18n.{I18nSupport, MessagesApi}
-import play.api.mvc.{ActionFunction, ControllerComponents, Result}
 import play.api.mvc.Results.Unauthorized
+import play.api.mvc.{ActionFunction, ControllerComponents, Result}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.UnauthorizedView
 

@@ -17,10 +17,10 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.i18n.Messages
-import uk.gov.hmrc.internalauth.client.Resource
+import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
 import uk.gov.hmrc.govukfrontend.views.viewmodels.select.{Select, SelectItem}
 import uk.gov.hmrc.hmrcfrontend.views.viewmodels.accessibleautocomplete.AccessibleAutocomplete
-import uk.gov.hmrc.govukfrontend.views.Implicits.RichSelect
+import uk.gov.hmrc.internalauth.client.Resource
 
 extension (resources: Set[Resource]) {
   def containsResource(name: String): Boolean = resources.exists(_.resourceLocation.value == name)

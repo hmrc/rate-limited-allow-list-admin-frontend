@@ -18,10 +18,10 @@ package uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 import play.api.Logging
 import play.api.i18n.{I18nSupport, Messages}
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Request}
+import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendController
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.AuthActions
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.actions.{AuthActions, UserRequest}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.forms.StringFormProvider
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowList
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.html.CreateAllowListView
@@ -44,19 +44,19 @@ class CreateAllowListController @Inject()(
   def onPageLoad(service: String): Action[AnyContent] =
     auth.authorized.admin.service(service):
       request =>
-        given Request[?] = request
+        given UserRequest[?] = request
         Ok(view(form, service))
 
   def onSubmit(service: String): Action[AnyContent] =
     auth.authorized.admin.service(service).async:
       request =>
-        given Request[?] = request
+        given UserRequest[?] = request
         form.bindFromRequest().fold(
           formWithErrors => {
             Future.successful(BadRequest(view(formWithErrors, service)))
           },
           allowList => connector.createAllowList(service, allowList).map(
-            _ => Redirect(routes.AllowListSummaryController.root(service, allowList))
+            _ => Redirect(routes.AllowListSummaryController.manage(service, allowList))
               .flashing("rlal-notification" -> summon[Messages]("rlal.create_allow_list.flash.success", service, allowList))
           )
         )

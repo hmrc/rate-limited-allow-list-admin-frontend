@@ -130,7 +130,7 @@ class SetUserLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPerSu
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, feature).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.set_user_limit.flash.success", feature)

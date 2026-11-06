@@ -125,7 +125,7 @@ class CreateAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, allowList).url
+      redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, allowList).url
       
       val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
       flash(result).get("rlal-notification").value mustEqual messages("rlal.create_allow_list.flash.success", service, allowList)

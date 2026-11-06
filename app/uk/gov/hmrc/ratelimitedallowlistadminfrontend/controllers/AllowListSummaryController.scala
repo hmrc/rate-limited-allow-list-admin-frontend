@@ -38,10 +38,10 @@ class AllowListSummaryController @Inject()(
   view: AllowListSummaryView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging {
 
-  def root(service: String, allowList: String): Action[AnyContent] =
+  def root(service: String, allowList: String, mode: UserMode): Action[AnyContent] =
     auth.authorized.service(service) {
-      r =>
-        r.userMode match {
+      r => 
+        mode match {
           case Admin => Redirect(routes.AllowListSummaryController.manage(service, allowList)).flashing(r.flash)
           case ReadOnly => Redirect(routes.AllowListSummaryController.view(service, allowList))
         }
@@ -69,9 +69,9 @@ class AllowListSummaryController @Inject()(
       (allowListConfigOpt, reportOpt) match
         case (Some(metadata), Some(report)) =>
           val vm = AllowListSummaryViewModel(metadata, report,  mode)
-          Ok(view(service, allowList, Some(vm)))
+          Ok(view(service, allowList, Some(vm), mode))
 
         case _ =>
           logger.error(s"No configuration found for service $service and allow list $allowList, allowListConfigOpt=$allowListConfigOpt reportOpt=$reportOpt")
-          Ok(view(service, allowList, None))
+          Ok(view(service, allowList, None, mode))
 }

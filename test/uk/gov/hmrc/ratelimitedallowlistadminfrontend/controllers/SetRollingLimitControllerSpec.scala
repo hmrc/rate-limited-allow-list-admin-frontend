@@ -154,7 +154,7 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
+        redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, feature).url
 
         val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
         flash(result).get("rlal-notification").value mustEqual messages("rlal.set_rolling_limit.flash.success.unbounded", feature)
@@ -254,7 +254,7 @@ class SetRollingLimitControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPe
         val result = route(app, request).value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.AllowListSummaryController.root(service, feature).url
+        redirectLocation(result).value mustEqual routes.AllowListSummaryController.manage(service, feature).url
 
         val messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
         flash(result).get("rlal-notification").value mustEqual messages("rlal.set_rolling_limit.flash.success.plural", value, Daily.value)

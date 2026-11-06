@@ -36,6 +36,7 @@ import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBeh
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode.ReadOnly
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -128,7 +129,7 @@ class SelectViewAllowListControllerSpec extends AnyWordSpec, Matchers, GuiceOneA
       val result = route(app, request).value
 
       status(result) mustEqual SEE_OTHER
-      redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(serviceName1).url
+      redirectLocation(result).value mustEqual routes.ServiceSummaryController.onPageLoad(serviceName1, ReadOnly).url
 
     "return a Bad Request and errors when a service name is submitted that is not known" in:
       when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.unit)

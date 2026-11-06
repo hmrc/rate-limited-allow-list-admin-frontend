@@ -17,11 +17,10 @@
 package uk.gov.hmrc.ratelimitedallowlistadminfrontend.views.helpers
 
 import play.api.i18n.Messages
-import uk.gov.hmrc.govukfrontend.views.Aliases.Text
-import uk.gov.hmrc.govukfrontend.views.viewmodels.breadcrumbs.BreadcrumbsItem
-import uk.gov.hmrc.govukfrontend.views.viewmodels.breadcrumbs.Breadcrumbs
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 import play.api.mvc.Call
+import uk.gov.hmrc.govukfrontend.views.Aliases.Text
+import uk.gov.hmrc.govukfrontend.views.viewmodels.breadcrumbs.{Breadcrumbs, BreadcrumbsItem}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers
 
 extension (left: BreadcrumbsItem)
   def >(right: BreadcrumbsItem): Breadcrumbs = Breadcrumbs(List(left, right))

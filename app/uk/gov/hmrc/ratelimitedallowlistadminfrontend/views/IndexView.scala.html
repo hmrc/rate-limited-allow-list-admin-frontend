@@ -41,7 +41,7 @@
 
             @activeServices.map { serviceName =>
                 <li>
-                    <a href="@routes.ServiceSummaryController.onPageLoad(serviceName)" class="govuk-link">
+                    <a href="@routes.ServiceSummaryController.onPageLoad(serviceName, UserMode.Admin)" class="govuk-link">
                       @serviceName
                     </a>
                 </li>
