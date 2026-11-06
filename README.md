@@ -11,7 +11,7 @@ In this frontend service the admin users can configure the onboarding parameters
 
 A user who is not an owner of a service can view, but not change, the onboarding parameters.
 
-It is used in combination with [rate-limited-allow-list](https://github.com/hmrc/rate-limited-allow-list), which is responsible for storing the list of allowed identifiers that services can check against. The [readme for rate limited allow list](https://github.com/hmrc/user-allow-list/blob/main/README.md) provides a more complete description of what is and isn't supported, along with integration instructions.
+It is used in combination with [rate-limited-allow-list](https://github.com/hmrc/rate-limited-allow-list), which is responsible for storing the list of allowed identifiers that services can check against. The [readme for rate limited allow list]([https://github.com/hmrc/rate-limited-user-allow-list/blob/main/README.md](https://github.com/hmrc/rate-limited-allow-list/blob/main/README.md)) provides a more complete description of what is and isn't supported, along with integration instructions.
 
 ## Accessing the service
 
