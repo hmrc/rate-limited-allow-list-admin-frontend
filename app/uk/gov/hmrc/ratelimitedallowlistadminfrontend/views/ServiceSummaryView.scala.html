@@ -22,7 +22,7 @@
   @govukBreadcrumbs(crumb.home > crumb.current("rlal.service_summary.breadcrumb", service))
 }
 
-@allowListRoute()={
+@allowListRoute(allowListName: String)=@{
   mode match {
     case UserMode.Admin => routes.AllowListSummaryController.manage(service, allowListName)
     case UserMode.ReadOnly => routes.AllowListSummaryController.view(service, allowListName)
@@ -40,7 +40,7 @@
             @vm.running.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@allowListRoute()"
+                       href="@allowListRoute(allowListName)"
                     >@allowListName</a>
                 </li>
             }
@@ -56,7 +56,7 @@
             @vm.paused.map { allowListName =>
                 <li>
                     <a class="govuk-link"
-                       href="@allowListRoute()"
+                       href="@allowListRoute(allowListName)"
                     >@allowListName</a>
                 </li>
             }
