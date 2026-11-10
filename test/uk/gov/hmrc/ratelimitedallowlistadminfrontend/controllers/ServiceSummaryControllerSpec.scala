@@ -37,10 +37,11 @@ import uk.gov.hmrc.internalauth.client.test.{FrontendAuthComponentsStub, StubBeh
 import uk.gov.hmrc.internalauth.client.{FrontendAuthComponents, Resource}
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.connectors.RateLimitedAllowListConnector
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.controllers.routes
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models
 import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.AllowListConfiguration.*
-import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode.Admin
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.Timeframe.Daily
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.UserMode.{Admin, ReadOnly}
+import uk.gov.hmrc.ratelimitedallowlistadminfrontend.models.{AllowListConfiguration, UserMode}
 
 import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -83,131 +84,144 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     super.beforeEach()
     Mockito.reset(stubBehaviour)
 
-  private def url: Call = routes.ServiceSummaryController.onPageLoad(service, Admin)
+  private val url: UserMode => Call = routes.ServiceSummaryController.onPageLoad(service, _)
 
-  "GET /" should {
-    "must display the page" when {
-      "user is an authorised admin and there are allow lists for the service" in {
+
+  behave like serviceSummaryControllerPage(Admin)
+  behave like serviceSummaryControllerPage(ReadOnly)
+
+
+  private def serviceSummaryControllerPage(mode: UserMode): Unit = {
+    s"GET / for $mode" should {
+      "must display the page" when {
+        "user is an authorised admin and there are allow lists for the service" in {
+          when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
+          when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config2, config1)))
+
+          val request = FakeRequest(url(mode)).withSession("authToken" -> "Token some-token")
+
+          val result = route(app, request).value
+
+          status(result) mustBe OK
+
+          behave like controllerThatRendersServiceSummaryView(result, mode)
+        }
+
+        "user is authorised but not an admin, and there are allow lists for the service" in {
+          when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(false))
+          when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config2, config1)))
+
+          val request = FakeRequest(url(mode)).withSession("authToken" -> "Token some-token")
+
+          val result = route(app, request).value
+
+          status(result) mustBe OK
+
+          behave like controllerThatRendersServiceSummaryView(result, mode)
+        }
+      }
+
+      "must display the page when the user is authorised and all allow lists are running" in {
         when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-        when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config2, config1)))
+        when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config1)))
 
-        val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
-
-        val result = route(app, request).value
-
-        status(result) mustBe OK
-
-        behave like controllerThatRendersServiceSummaryView(result)
-      }
-
-      "user is authorised but not an admin, and there are allow lists for the service" in {
-        when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(false))
-        when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config2, config1)))
-
-        val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
+        val request = FakeRequest(url(mode)).withSession("authToken" -> "Token some-token")
 
         val result = route(app, request).value
 
         status(result) mustBe OK
 
-        behave like controllerThatRendersServiceSummaryView(result)
+        val html = Jsoup.parse(contentAsString(result))
+
+        val runningSection = Option(html.getElementById("allow-lists-running")).value
+        val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+
+        val runningAllowListsList = runningSection.getElementsByTag("li")
+        runningAllowListsList.size() mustEqual 2
+        runningAllowListsList.get(0).text() must include(allowList1)
+        runningAllowListsList.get(1).text() must include(allowList3)
+
+        val pausedAllowListsList = pausedSection.getElementsByTag("li")
+        pausedAllowListsList.size() mustEqual 0
+        Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
+          messages("rlal.service_summary.allow_list_paused_empty")
+        )
       }
-    }
 
-    "must display the page when the user is authorised and all allow lists are running" in {
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config3, config1)))
+      "must display the page when the user is authorised and all allow lists are paused" in {
+        when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
+        when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config2)))
 
-      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
+        val request = FakeRequest(url(mode)).withSession("authToken" -> "Token some-token")
 
-      val result = route(app, request).value
+        val result = route(app, request).value
 
-      status(result) mustBe OK
+        status(result) mustBe OK
 
-      val html = Jsoup.parse(contentAsString(result))
+        val html = Jsoup.parse(contentAsString(result))
 
-      val runningSection = Option(html.getElementById("allow-lists-running")).value
-      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+        val runningSection = Option(html.getElementById("allow-lists-running")).value
+        val pausedSection = Option(html.getElementById("allow-lists-paused")).value
 
-      val runningAllowListsList = runningSection.getElementsByTag("li")
-      runningAllowListsList.size() mustEqual 2
-      runningAllowListsList.get(0).text() must include(allowList1)
-      runningAllowListsList.get(1).text() must include(allowList3)
+        val runningAllowListsList = runningSection.getElementsByTag("li")
+        runningAllowListsList.size() mustEqual 0
+        Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
+          messages("rlal.service_summary.allow_list_running_empty")
+        )
 
-      val pausedAllowListsList = pausedSection.getElementsByTag("li")
-      pausedAllowListsList.size() mustEqual 0
-      Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
-        messages("rlal.service_summary.allow_list_paused_empty")
-      )
-    }
+        val pausedAllowListsList = pausedSection.getElementsByTag("li")
+        pausedAllowListsList.size() mustEqual 1
+        pausedAllowListsList.get(0).text() must include(allowList2)
+      }
 
-    "must display the page when the user is authorised and all allow lists are paused" in {
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List(config2)))
+      "must display the page when the user is authorised and there are no allow lists for the service" in {
+        when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
+        when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List.empty))
 
-      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
+        val request = FakeRequest(url(mode)).withSession("authToken" -> "Token some-token")
 
-      val result = route(app, request).value
+        val result = route(app, request).value
 
-      status(result) mustBe OK
+        status(result) mustBe 404
 
-      val html = Jsoup.parse(contentAsString(result))
+        val html = Jsoup.parse(contentAsString(result))
 
-      val runningSection = Option(html.getElementById("allow-lists-running")).value
-      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
+        val runningSection = Option(html.getElementById("allow-lists-running")).value
+        val pausedSection = Option(html.getElementById("allow-lists-paused")).value
 
-      val runningAllowListsList = runningSection.getElementsByTag("li")
-      runningAllowListsList.size() mustEqual 0
-      Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
-        messages("rlal.service_summary.allow_list_running_empty")
-      )
+        Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
+          messages("rlal.service_summary.allow_list_running_empty")
+        )
+        Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
+          messages("rlal.service_summary.allow_list_paused_empty")
+        )
+      }
 
-      val pausedAllowListsList = pausedSection.getElementsByTag("li")
-      pausedAllowListsList.size() mustEqual 1
-      pausedAllowListsList.get(0).text() must include(allowList2)
-    }
+      "must fail when the user is not authenticated (no auth token)" in {
+        val request = FakeRequest(url(mode))
+        val result = route(app, request).value
+        status(result) mustBe SEE_OTHER
+        redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
+      }
 
-    "must display the page when the user is authorised and there are no allow lists for the service" in {
-      when(stubBehaviour.stubAuth[Set[Resource]](any(), any())).thenReturn(Future.successful(true))
-      when(mockConnector.getAllowLists(any())(using any())).thenReturn(Future.successful(List.empty))
+      "must fail when the user is not authorised" in {
+        when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
+        val request = FakeRequest(url(mode))
+          .withSession("authToken" -> "Token some-token")
 
-      val request = FakeRequest(url).withSession("authToken" -> "Token some-token")
-
-      val result = route(app, request).value
-
-      status(result) mustBe 404
-
-      val html = Jsoup.parse(contentAsString(result))
-
-      val runningSection = Option(html.getElementById("allow-lists-running")).value
-      val pausedSection = Option(html.getElementById("allow-lists-paused")).value
-
-      Option(runningSection.getElementById("allow-list-running-empty")).value.text() must include(
-        messages("rlal.service_summary.allow_list_running_empty")
-      )
-      Option(pausedSection.getElementById("allow-list-paused-empty")).value.text() must include(
-        messages("rlal.service_summary.allow_list_paused_empty")
-      )
-    }
-
-    "must fail when the user is not authenticated (no auth token)" in {
-      val request = FakeRequest(url)
-      val result = route(app, request).value
-      status(result) mustBe SEE_OTHER
-      redirectLocation(result).value must include("/internal-auth-frontend/sign-in")
-    }
-
-    "must fail when the user is not authorised" in {
-      when(stubBehaviour.stubAuth[String](any(), any())).thenReturn(Future.failed(new RuntimeException()))
-      val request = FakeRequest(url)
-        .withSession("authToken" -> "Token some-token")
-
-      route(app, request).value.failed.futureValue
+        route(app, request).value.failed.futureValue
+      }
     }
   }
 
-  private def controllerThatRendersServiceSummaryView(result: Future[Result]) = {
+  private def controllerThatRendersServiceSummaryView(result: Future[Result], mode: UserMode) = {
     val html = Jsoup.parse(contentAsString(result))
+
+    def forwardUrl(allowList: String) =
+      mode match {
+        case models.UserMode.Admin => routes.AllowListSummaryController.manage(service, allowList).url
+        case models.UserMode.ReadOnly => routes.AllowListSummaryController.view(service, allowList).url
+      }
 
     val runningSection = Option(html.getElementById("allow-lists-running")).value
     val pausedSection = Option(html.getElementById("allow-lists-paused")).value
@@ -215,9 +229,12 @@ class ServiceSummaryControllerSpec extends AnyWordSpec, Matchers, GuiceOneAppPer
     val runningAllowListsList = runningSection.getElementsByTag("li")
     runningAllowListsList.size() mustEqual 2
     runningAllowListsList.get(0).text() must include(allowList1)
+    runningAllowListsList.get(0).getElementsByTag("a").attr("href") mustEqual forwardUrl(allowList1)
     runningAllowListsList.get(1).text() must include(allowList3)
+    runningAllowListsList.get(1).getElementsByTag("a").attr("href") mustEqual forwardUrl(allowList3)
 
     val pausedAllowListsList = pausedSection.getElementsByTag("li")
     pausedAllowListsList.size() mustEqual 1
     pausedAllowListsList.get(0).text() must include(allowList2)
+    pausedAllowListsList.get(0).getElementsByTag("a").attr("href") mustEqual forwardUrl(allowList2)
   }
