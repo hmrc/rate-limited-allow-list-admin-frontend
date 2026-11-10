@@ -38,15 +38,6 @@ class AllowListSummaryController @Inject()(
   view: AllowListSummaryView
 )(using ExecutionContext) extends FrontendController(mcc), I18nSupport, Logging {
 
-  def root(service: String, allowList: String, mode: UserMode): Action[AnyContent] =
-    auth.authorized.service(service) {
-      r => 
-        mode match {
-          case Admin => Redirect(routes.AllowListSummaryController.manage(service, allowList)).flashing(r.flash)
-          case ReadOnly => Redirect(routes.AllowListSummaryController.view(service, allowList))
-        }
-    }
-
   def view(service: String, allowList: String): Action[AnyContent] =
     auth.authorized.service(service).async {
       request =>
